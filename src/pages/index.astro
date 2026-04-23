@@ -1,0 +1,200 @@
+---
+import Base from '@layouts/Base.astro'
+import Studio from '@components/Studio'
+
+const creatorLinks = [
+  { label: 'pye.pages.dev', href: 'https://pye.pages.dev'                      },
+  { label: 'GitHub',        href: 'https://github.com/yellatp'                  },
+  { label: 'LinkedIn',      href: 'https://linkedin.com/in/yellatp'             },
+  { label: 'Email',         href: 'mailto:pavan.yellathakota.ds@gmail.com'      },
+]
+
+const footerLinks = [
+  { label: 'Contact',        href: 'https://onlynerds.win/contact/'        },
+  { label: 'Privacy Policy', href: 'https://onlynerds.win/privacy-policy/' },
+  { label: 'Brand Assets',   href: 'https://onlynerds.win/brand/'          },
+  { label: 'Resources',      href: 'https://onlynerds.win/resources/'      },
+]
+
+const openSourceRepos = [
+  { label: 'onlynerds-banner',  href: 'https://github.com/yellatp/onlynerds-banner' },
+  { label: 'OnlyNerds',         href: 'https://github.com/yellatp/OnlyNerds'        },
+]
+---
+<Base>
+  <!-- ── Sticky nav ─────────────────────────────────────────────────────────── -->
+  <header style="position:sticky;top:0;z-index:100;background:rgba(7,9,12,0.96);backdrop-filter:blur(16px);border-bottom:0.5px solid var(--border);padding:0 40px;height:60px;display:flex;align-items:center;justify-content:space-between;">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <img src="/OnlyNerds.svg" alt="OnlyNerds" style="height:28px;width:auto;" onerror="this.src='/OnlyNerds.png'" />
+      <div>
+        <div style="font-size:11px;font-weight:600;letter-spacing:5px;">BANNER STUDIO</div>
+        <div style="font-size:9px;color:var(--tan);letter-spacing:3px;margin-top:1px;">OPEN SOURCE · BY ONLYNERDS</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:16px;">
+      <a href="https://github.com/yellatp/onlynerds-banner" target="_blank" rel="noopener noreferrer"
+        style="font-size:9px;color:var(--muted);letter-spacing:2px;font-family:var(--mono);text-decoration:none;display:flex;align-items:center;gap:6px;transition:color 0.2s;"
+        onmouseover="this.style.color='var(--tan)'" onmouseout="this.style.color=''">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+        STAR ON GITHUB
+      </a>
+      <span style="font-size:9px;color:var(--muted);letter-spacing:2px;">PNG &amp; SVG EXPORT</span>
+    </div>
+  </header>
+
+  <!-- ── Hero ──────────────────────────────────────────────────────────────── -->
+  <section style="padding:44px 40px 32px;max-width:1280px;margin:0 auto;">
+    <div style="font-size:9px;letter-spacing:4px;color:var(--tan);margin-bottom:12px;display:flex;align-items:center;gap:9px;">
+      <span style="width:22px;height:0.5px;background:var(--tan);display:block;"></span>
+      PROFESSIONAL IDENTITY KIT
+    </div>
+    <h1 style="font-size:clamp(24px,2.8vw,40px);font-weight:600;letter-spacing:1px;line-height:1.1;margin-bottom:10px;">
+      Your Banner.<br/><em style="color:var(--tan);font-style:normal;">Your Brand.</em>
+    </h1>
+    <p style="font-family:var(--sans);font-size:13px;font-weight:300;color:var(--muted);line-height:1.8;max-width:520px;">
+      LinkedIn banners, business cards, social headers. Pick a template, fill in your details, add skills and company logos, export as PNG or SVG.
+    </p>
+  </section>
+
+  <div style="max-width:1280px;margin:0 auto;padding:0 40px 0;">
+    <hr style="border:none;border-top:0.5px solid var(--border);" />
+  </div>
+
+  <!-- ── Studio ─────────────────────────────────────────────────────────────── -->
+  <Studio client:load />
+
+  <!-- ── Contribute strip ───────────────────────────────────────────────────── -->
+  <section style="border-top:0.5px solid var(--border);border-bottom:0.5px solid var(--border);padding:56px 40px;background:rgba(199,154,111,0.03);">
+    <div style="max-width:1280px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;">
+      <div>
+        <div style="font-size:9px;letter-spacing:0.35em;color:var(--tan);font-family:var(--mono);text-transform:uppercase;margin-bottom:16px;display:flex;align-items:center;gap:9px;">
+          <span style="width:18px;height:0.5px;background:var(--tan);display:block;"></span>
+          Contribute
+        </div>
+        <h2 style="font-size:clamp(18px,2vw,26px);font-weight:600;letter-spacing:0.5px;line-height:1.25;margin-bottom:14px;">
+          Join as a Contributor
+        </h2>
+        <p style="font-family:var(--sans);font-size:13px;font-weight:300;color:var(--muted);line-height:1.9;max-width:480px;margin-bottom:28px;">
+          OnlyNerds is a platform built on the principle of shared growth. Fork the repo, add resources you have discovered, push better data, or improve the UI. Every contribution will be credited. If you share a resource, it goes up with your name on it.
+        </p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <a href="https://github.com/yellatp/onlynerds-banner" target="_blank" rel="noopener noreferrer"
+            style="display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:#1a1a1a;background:var(--tan);padding:11px 20px;text-decoration:none;transition:opacity 0.2s;"
+            onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+            Fork on GitHub
+          </a>
+          <a href="https://onlynerds.win/contact/" target="_blank" rel="noopener noreferrer"
+            style="display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--tan);padding:11px 20px;border:0.5px solid var(--tan-mid);text-decoration:none;transition:background 0.2s,border-color 0.2s;"
+            onmouseover="this.style.background='var(--tan-dim)'" onmouseout="this.style.background=''">
+            Share a resource or idea
+          </a>
+        </div>
+      </div>
+
+      <!-- Open source repos -->
+      <div>
+        <p style="font-size:9px;letter-spacing:0.22em;color:var(--muted);font-family:var(--mono);text-transform:uppercase;margin-bottom:18px;">Open Source Repos</p>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          {openSourceRepos.map(r => (
+            <a href={r.href} target="_blank" rel="noopener noreferrer"
+              style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border:0.5px solid var(--border);text-decoration:none;transition:border-color 0.2s;"
+              onmouseover="this.style.borderColor='var(--tan-mid)'" onmouseout="this.style.borderColor=''">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--muted)"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+                <span style="font-family:var(--mono);font-size:11px;color:var(--text);">yellatp / {r.label}</span>
+              </div>
+              <span style="font-size:9px;color:var(--tan);font-family:var(--mono);letter-spacing:0.15em;">FORK</span>
+            </a>
+          ))}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Footer ─────────────────────────────────────────────────────────────── -->
+  <footer style="border-top:0.5px solid var(--border);padding:64px 40px 40px;">
+    <div style="max-width:1280px;margin:0 auto;">
+
+      <!-- Main row: OnlyNerds | Creator | Alphonso AI -->
+      <div style="display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:56px;margin-bottom:48px;align-items:start;">
+
+        <!-- OnlyNerds logo + links -->
+        <div>
+          <a href="https://onlynerds.win" target="_blank" rel="noopener noreferrer"
+            style="display:inline-block;opacity:0.88;transition:opacity 0.2s;margin-bottom:24px;"
+            onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.88'">
+            <img src="/OnlyNerds_Nav.svg" alt="OnlyNerds" style="height:clamp(44px,8vw,72px);width:auto;display:block;"
+              onerror="this.src='/OnlyNerds-Logo.png'" />
+          </a>
+          <div style="display:flex;flex-direction:column;gap:7px;">
+            {footerLinks.map(l => (
+              <a href={l.href} target="_blank" rel="noopener noreferrer"
+                style="font-family:var(--mono);font-size:10px;letter-spacing:0.1em;color:var(--muted);text-decoration:none;display:flex;align-items:center;gap:7px;transition:color 0.2s;"
+                onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color=''">
+                <span style="display:inline-block;width:0;height:0.5px;background:currentColor;transition:width 0.25s;" class="footer-line"></span>
+                {l.label}
+              </a>
+            ))}
+          </div>
+        </div>
+
+        <!-- Creator -->
+        <div>
+          <p style="font-size:9px;letter-spacing:0.22em;color:var(--muted);font-family:var(--mono);text-transform:uppercase;margin-bottom:18px;">Creator</p>
+          <p style="font-size:14px;font-weight:600;color:#E8E4DE;margin-bottom:5px;letter-spacing:0.03em;">Pavan Yellathakota</p>
+          <p style="font-size:11px;color:var(--muted);font-family:var(--mono);margin-bottom:4px;">Data Scientist &amp; ML Practitioner</p>
+          <p style="font-size:11px;color:#16a34a;font-family:var(--mono);margin-bottom:20px;">Co-founder, Alphonso AI</p>
+          <div style="display:flex;flex-wrap:wrap;gap:7px;">
+            {creatorLinks.map(link => (
+              <a href={link.href}
+                target={link.href.startsWith('mailto') ? undefined : '_blank'}
+                rel="noopener noreferrer"
+                style="font-family:var(--mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);padding:5px 11px;border:0.5px solid var(--border);text-decoration:none;transition:color 0.2s,border-color 0.2s;"
+                onmouseover="this.style.color='#E8E4DE';this.style.borderColor='#706E66'"
+                onmouseout="this.style.color='';this.style.borderColor=''">
+                {link.label}
+              </a>
+            ))}
+          </div>
+        </div>
+
+        <!-- Alphonso AI -->
+        <div>
+          <p style="font-size:9px;letter-spacing:0.22em;color:var(--muted);font-family:var(--mono);text-transform:uppercase;margin-bottom:18px;">Built in Association With</p>
+          <a href="https://alphonso.app" target="_blank" rel="noopener noreferrer"
+            style="display:inline-flex;align-items:center;gap:10px;padding:12px 16px;border:0.5px solid var(--border);text-decoration:none;transition:border-color 0.2s;"
+            onmouseover="this.style.borderColor='#706E66'"
+            onmouseout="this.style.borderColor=''">
+            <img src="/AlphonsoAI_logo.svg" alt="Alphonso AI" style="height:28px;width:28px;object-fit:contain;"
+              onerror="this.src='/Alphonso_logo.png'" />
+            <span style="display:flex;align-items:baseline;gap:0;">
+              <span style="background:#ffffff;color:#111111;padding:2px 7px;font-size:13px;font-weight:700;line-height:1.5;">Alphonso</span>
+              <span style="background:#16a34a;color:#ffffff;padding:2px 7px;font-size:13px;font-weight:700;line-height:1.5;">AI</span>
+            </span>
+          </a>
+        </div>
+
+      </div>
+
+      <!-- Bottom bar -->
+      <div style="border-top:0.5px solid var(--border);padding-top:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+        <p style="font-size:9px;color:var(--muted);font-family:var(--mono);letter-spacing:0.1em;">
+          A product of&nbsp;<a href="https://onlynerds.win" target="_blank" rel="noopener noreferrer"
+            style="color:var(--text);text-decoration:none;transition:color 0.2s;"
+            onmouseover="this.style.color='var(--tan)'" onmouseout="this.style.color='var(--text)'">OnlyNerds</a>
+          &nbsp;&middot;&nbsp;Open Source
+        </p>
+        <p style="font-size:9px;color:var(--muted);font-family:var(--mono);letter-spacing:0.1em;text-transform:uppercase;">
+          &copy; 2026 OnlyNerds. Free to use.
+        </p>
+      </div>
+
+    </div>
+  </footer>
+</Base>
+
+<style>
+  a:hover .footer-line,
+  a:hover > .footer-line { width: 14px !important; }
+</style>

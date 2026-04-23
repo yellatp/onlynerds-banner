@@ -1,0 +1,35 @@
+---
+interface Props {
+  title?: string
+  description?: string
+}
+const {
+  title = 'Banner Studio — Free LinkedIn Banner Maker',
+  description = 'Create stunning LinkedIn banners, business cards, and social headers in seconds. Pick a template, add your name, role and skills — download PNG or SVG instantly.',
+} = Astro.props
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <link rel="icon" type="image/svg+xml" href="/OnlyNerds.svg" />
+    <link rel="icon" type="image/png" href="/OnlyNerds.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  </head>
+  <body>
+    <div class="cm cm-tl"></div>
+    <div class="cm cm-br"></div>
+    <slot />
+  </body>
+</html>
+
+<style is:global>
+  @import '../styles/global.css';
+</style>
