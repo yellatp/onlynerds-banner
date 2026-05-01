@@ -220,10 +220,21 @@ export type FontOption = {
 }
 
 export const FONT_OPTIONS: FontOption[] = [
-  { id: 'ibm-mono', label: 'IBM Plex Mono', family: "'IBM Plex Mono', monospace" },
-  { id: 'ibm-sans', label: 'IBM Plex Sans', family: "'IBM Plex Sans', sans-serif" },
-  { id: 'inter',    label: 'Inter',         family: "'Inter', sans-serif"         },
-  { id: 'grotesk',  label: 'Space Grotesk', family: "'Space Grotesk', sans-serif" },
+  { id: 'ibm-mono',   label: 'IBM Plex Mono',    family: "'IBM Plex Mono', monospace" },
+  { id: 'ibm-sans',   label: 'IBM Plex Sans',    family: "'IBM Plex Sans', sans-serif" },
+  { id: 'inter',      label: 'Inter',            family: "'Inter', sans-serif"         },
+  { id: 'grotesk',    label: 'Space Grotesk',    family: "'Space Grotesk', sans-serif" },
+  { id: 'jakarta',    label: 'Plus Jakarta Sans',family: "'Plus Jakarta Sans', sans-serif" },
+  { id: 'poppins',    label: 'Poppins',          family: "'Poppins', sans-serif"       },
+  { id: 'outfit',     label: 'Outfit',           family: "'Outfit', sans-serif"        },
+  { id: 'satoshi',    label: 'Satoshi',          family: "'Satoshi', sans-serif"       },
+  { id: 'cabinet',    label: 'Cabinet Grotesk',  family: "'Cabinet Grotesk', sans-serif" },
+  { id: 'dm-sans',    label: 'DM Sans',          family: "'DM Sans', sans-serif"       },
+  { id: 'clash',      label: 'Clash Display',    family: "'Clash Display', sans-serif" },
+  { id: 'jetbrains',  label: 'JetBrains Mono',   family: "'JetBrains Mono', monospace" },
+  { id: 'fira-code',  label: 'Fira Code',        family: "'Fira Code', monospace"      },
+  { id: 'syne',       label: 'Syne',             family: "'Syne', sans-serif"          },
+  { id: 'archivo',    label: 'Archivo',          family: "'Archivo', sans-serif"       },
 ]
 
 export const FONT_WEIGHTS: { value: number; label: string }[] = [

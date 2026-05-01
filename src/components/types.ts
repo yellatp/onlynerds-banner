@@ -39,9 +39,13 @@ export type BannerConfig = {
   skills: Skill[]
   maxSkills: number
   showSkillLabels: boolean
-  // Logos (up to 3: 1 current + 2 past)
+  // Logos (up to 4: 1 current + 3 past)
   logos: LogoEntry[]
   logoSize: number
+  // Git platform badge
+  gitUsername: string
+  gitPlatform: 'github' | 'gitlab' | 'gitbucket'
+  showGitBadge: boolean
   // Layout
   showLinkedInZone: boolean
   patternOpacity: number

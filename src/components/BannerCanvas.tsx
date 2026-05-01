@@ -193,6 +193,66 @@ function PastLogosRow({ logos, pastW, pastH, namePx, rightEdge, bottomY, accent,
   )
 }
 
+// ─── Git platform badge (top-left) ───────────────────────────────────────────
+
+const GIT_PLATFORM_ICONS: Record<string, string> = {
+  github:    'https://cdn.simpleicons.org/github/ffffff',
+  gitlab:    'https://cdn.simpleicons.org/gitlab/ffffff',
+  gitbucket: 'https://cdn.simpleicons.org/gitbucket/ffffff',
+}
+
+const GIT_PROFILE_URLS: Record<string, (u: string) => string> = {
+  github:    (u) => `https://github.com/${encodeURIComponent(u)}`,
+  gitlab:    (u) => `https://gitlab.com/${encodeURIComponent(u)}`,
+  gitbucket: (u) => `https://gitbucket.com/${encodeURIComponent(u)}`,
+}
+
+type GitBadgeProps = {
+  username: string
+  platform: 'github' | 'gitlab' | 'gitbucket'
+  topY: number
+  leftPad: number
+  scaleH: number
+  scaleW: number
+  accent: string
+}
+
+function GitBadge({ username, platform, topY, leftPad, scaleH, scaleW, accent }: GitBadgeProps) {
+  const iconUrl = GIT_PLATFORM_ICONS[platform]
+  const profileUrl = GIT_PROFILE_URLS[platform](username)
+  const iconSz = Math.round(18 * scaleH)
+  const fontSize = Math.round(11 * scaleH)
+  const gap = Math.round(6 * scaleW)
+  const y = topY
+  const textX = leftPad + iconSz + gap
+
+  return (
+    <g>
+      {/* Platform icon */}
+      <image
+        href={iconUrl}
+        x={leftPad} y={y}
+        width={iconSz} height={iconSz}
+        preserveAspectRatio="xMidYMid meet"
+      >
+        <title>{platform}</title>
+      </image>
+      {/* Username text (acts as link) */}
+      <text
+        x={textX} y={y + iconSz - Math.round(2 * scaleH)}
+        fontFamily="'IBM Plex Mono', monospace"
+        fontSize={fontSize}
+        fontWeight={500}
+        fill={accent}
+        fillOpacity={0.85}
+        letterSpacing={Math.round(0.5 * scaleW)}
+      >
+        {username}
+      </text>
+    </g>
+  )
+}
+
 // ─── Main canvas ─────────────────────────────────────────────────────────────
 
 type Props = {
@@ -212,6 +272,7 @@ export default function BannerCanvas({ config, svgRef }: Props) {
     nameSize, roleSize, teamSize, taglineSize,
     skills, maxSkills, showSkillLabels,
     logos, logoSize,
+    gitUsername, gitPlatform, showGitBadge,
     showLinkedInZone,
   } = config
 
@@ -242,8 +303,8 @@ export default function BannerCanvas({ config, svgRef }: Props) {
   const taglineY = ty
 
   // Skills
-  const skillIconSz = Math.round(28 * scaleH)
-  const skillGap    = Math.round(18 * scaleW)
+  const skillIconSz = Math.round(36 * scaleH)
+  const skillGap    = Math.round(24 * scaleW)
   const skillRowY   = Math.round(height * 0.82)
   const displayedSkills = skills.slice(0, maxSkills)
 
@@ -259,8 +320,8 @@ export default function BannerCanvas({ config, svgRef }: Props) {
   // Current: top-right anchor
   const currentTopY = Math.round(20 * scaleH)
 
-  // Past: bottom-right anchor, sits above skill row
-  const pastBottomY = Math.round(height * 0.62) - pastH
+  // Past: bottom-right anchor, sits above skill row (moved up)
+  const pastBottomY = Math.round(height * 0.55) - pastH
 
   const currentLogos = logos.filter(l => !l.isPast)
   const pastLogos    = logos.filter(l =>  l.isPast)
@@ -408,6 +469,19 @@ export default function BannerCanvas({ config, svgRef }: Props) {
         accent={accent}
         scaleH={scaleH} scaleW={scaleW}
       />
+
+      {/* Git platform badge — top-left */}
+      {showGitBadge && gitUsername && (
+        <GitBadge
+          username={gitUsername}
+          platform={gitPlatform}
+          topY={currentTopY}
+          leftPad={leftPad}
+          scaleH={scaleH}
+          scaleW={scaleW}
+          accent={accent}
+        />
+      )}
 
       {/* Corner accent marks */}
       <g opacity={0.16}>

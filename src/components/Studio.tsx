@@ -38,6 +38,9 @@ const DEFAULT: BannerConfig = {
   showSkillLabels: true,
   logos:         [],
   logoSize:      130,
+  gitUsername:   '',
+  gitPlatform:   'github',
+  showGitBadge:  false,
   showLinkedInZone: false,
   patternOpacity: 0.18,
 }
@@ -122,7 +125,10 @@ function Toggle({ label, value, onChange }: { label: string; value: boolean; onC
   )
 }
 
-/** One row: font family dropdown + weight dropdown + size number input */
+/** Generate size options from 5 to 60 */
+const SIZE_OPTIONS = Array.from({ length: 56 }, (_, i) => i + 5)
+
+/** One row: font family dropdown + weight dropdown + size dropdown */
 function TextStyleRow({
   label, textValue, onText,
   font, onFont,
@@ -142,7 +148,7 @@ function TextStyleRow({
   placeholder?: string
 }) {
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 140px 140px 70px', gap: 8, alignItems: 'end' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 140px 140px 80px', gap: 8, alignItems: 'end' }}>
       <F label={label}>
         <input style={inp} value={textValue} onChange={e => onText(e.target.value)} placeholder={placeholder} />
       </F>
@@ -160,11 +166,9 @@ function TextStyleRow({
         </select>
       </F>
       <F label="Size">
-        <input
-          type="number" min={6} max={120} value={size}
-          onChange={e => { const n = parseInt(e.target.value, 10); if (!isNaN(n) && n >= 6 && n <= 120) onSize(n) }}
-          style={{ ...inp, textAlign: 'center', padding: '8px 6px' }}
-        />
+        <select style={sel} value={size} onChange={e => onSize(Number(e.target.value))}>
+          {SIZE_OPTIONS.map(s => <option key={s} value={s}>{s}px</option>)}
+        </select>
       </F>
     </div>
   )
@@ -288,9 +292,29 @@ function LogoRow({
   )
 }
 
+// ─── Git platform helpers ────────────────────────────────────────────────────
+
+const GIT_PLATFORMS = [
+  { id: 'github',    label: 'GitHub',    icon: '🐙' },
+  { id: 'gitlab',    label: 'GitLab',    icon: '🦊' },
+  { id: 'gitbucket', label: 'GitBucket', icon: '🪣' },
+] as const
+
+/** Derive the avatar URL from a username for the given platform */
+function gitAvatarUrl(username: string, platform: string): string {
+  switch (platform) {
+    case 'gitlab':
+      return `https://gitlab.com/${encodeURIComponent(username)}.png?size=80`
+    case 'gitbucket':
+      return `https://gitbucket.com/${encodeURIComponent(username)}.png?size=80`
+    default:
+      return `https://github.com/${encodeURIComponent(username)}.png?size=80`
+  }
+}
+
 // ─── Main Studio ──────────────────────────────────────────────────────────────
 
-type Tab = 'template' | 'identity' | 'skills' | 'logo' | 'export'
+type Tab = 'template' | 'identity' | 'skills' | 'logo' | 'github' | 'export'
 
 export default function Studio() {
   const [cfg, setCfg] = useState<BannerConfig>(DEFAULT)
@@ -311,7 +335,7 @@ export default function Studio() {
     setCfg(prev => ({ ...prev, logos: prev.logos.filter((_, i) => i !== idx) }))
 
   const addLogo = (isPast: boolean) => {
-    if (cfg.logos.length >= 3) return
+    if (cfg.logos.length >= 4) return
     set('logos', [...cfg.logos, newLogo(isPast)])
   }
 
@@ -323,7 +347,8 @@ export default function Studio() {
     { id: 'identity', label: '02 Identity' },
     { id: 'skills',   label: '03 Skills'   },
     { id: 'logo',     label: '04 Logo'     },
-    { id: 'export',   label: '05 Export'   },
+    { id: 'github',   label: '05 GitHub'   },
+    { id: 'export',   label: '06 Export'   },
   ]
 
   return (
@@ -484,24 +509,24 @@ export default function Studio() {
                   <span style={secLabel}>Company Logos</span>
                   <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
                     <button type="button" onClick={() => addLogo(false)}
-                      disabled={currentLogos.length >= 1 || cfg.logos.length >= 3}
+                      disabled={currentLogos.length >= 1 || cfg.logos.length >= 4}
                       style={{
                         background: 'var(--tan-dim)', border: '0.5px solid var(--tan-mid)',
                         borderRadius: 5, color: 'var(--tan)', fontFamily: 'var(--mono)',
                         fontSize: 9, letterSpacing: '0.15em', padding: '6px 12px',
-                        cursor: cfg.logos.length >= 3 || currentLogos.length >= 1 ? 'not-allowed' : 'pointer',
-                        opacity: cfg.logos.length >= 3 || currentLogos.length >= 1 ? 0.4 : 1,
+                        cursor: cfg.logos.length >= 4 || currentLogos.length >= 1 ? 'not-allowed' : 'pointer',
+                        opacity: cfg.logos.length >= 4 || currentLogos.length >= 1 ? 0.4 : 1,
                       }}>
                       + Current Company
                     </button>
                     <button type="button" onClick={() => addLogo(true)}
-                      disabled={pastLogos.length >= 2 || cfg.logos.length >= 3}
+                      disabled={pastLogos.length >= 3 || cfg.logos.length >= 4}
                       style={{
                         background: 'var(--surface2)', border: '0.5px solid var(--border)',
                         borderRadius: 5, color: 'var(--muted)', fontFamily: 'var(--mono)',
                         fontSize: 9, letterSpacing: '0.15em', padding: '6px 12px',
-                        cursor: cfg.logos.length >= 3 || pastLogos.length >= 2 ? 'not-allowed' : 'pointer',
-                        opacity: cfg.logos.length >= 3 || pastLogos.length >= 2 ? 0.4 : 1,
+                        cursor: cfg.logos.length >= 4 || pastLogos.length >= 3 ? 'not-allowed' : 'pointer',
+                        opacity: cfg.logos.length >= 4 || pastLogos.length >= 3 ? 0.4 : 1,
                       }}>
                       + Past Company (Ex-)
                     </button>
@@ -510,7 +535,7 @@ export default function Studio() {
 
                 {cfg.logos.length === 0 && (
                   <p style={{ fontSize: 11, color: 'var(--muted)', fontFamily: 'var(--mono)', lineHeight: 1.7 }}>
-                    Add up to 1 current company and 2 past companies. Past companies show an Ex- prefix automatically.
+                    Add up to 1 current company and 3 past companies. Past companies show an Ex- prefix automatically.
                   </p>
                 )}
 
@@ -567,6 +592,119 @@ export default function Studio() {
             </div>
           )}
 
+          {/* GIT PLATFORM BADGE */}
+          {tab === 'github' && (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 220px', gap: 36 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                <span style={secLabel}>Git Platform Badge</span>
+
+                <div style={{
+                  background: 'var(--surface2)', border: '0.5px solid var(--border)',
+                  borderRadius: 9, padding: '18px 20px',
+                  display: 'flex', flexDirection: 'column', gap: 16,
+                }}>
+                  {/* Platform selector */}
+                  <F label="Platform">
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      {GIT_PLATFORMS.map(p => (
+                        <button key={p.id} type="button" onClick={() => set('gitPlatform', p.id)}
+                          style={{
+                            flex: 1, padding: '8px 12px',
+                            background: cfg.gitPlatform === p.id ? 'var(--tan-dim)' : 'var(--surface)',
+                            border: `0.5px solid ${cfg.gitPlatform === p.id ? 'var(--tan-mid)' : 'var(--border)'}`,
+                            borderRadius: 6, cursor: 'pointer',
+                            color: cfg.gitPlatform === p.id ? 'var(--tan)' : 'var(--muted)',
+                            fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.1em',
+                            textAlign: 'center',
+                          }}>
+                            {p.icon} {p.label}
+                          </button>
+                      ))}
+                    </div>
+                  </F>
+
+                  {/* Username */}
+                  <F label="Username">
+                    <div style={{ display: 'flex', gap: 10, alignItems: 'end' }}>
+                      <input style={{ ...inp, flex: 1 }} value={cfg.gitUsername}
+                        onChange={e => set('gitUsername', e.target.value)}
+                        placeholder="e.g. yellatp" />
+                      {cfg.gitUsername && (
+                        <div style={{
+                          width: 40, height: 40, borderRadius: '50%', overflow: 'hidden',
+                          border: '0.5px solid var(--border)', flexShrink: 0,
+                          background: 'var(--surface)',
+                        }}>
+                          <img src={gitAvatarUrl(cfg.gitUsername, cfg.gitPlatform)}
+                            alt={cfg.gitUsername}
+                            width={40} height={40}
+                            style={{ objectFit: 'cover', display: 'block' }}
+                            onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
+                        </div>
+                      )}
+                    </div>
+                  </F>
+
+                  {/* Toggle */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 14, paddingTop: 4 }}>
+                    <Toggle label="Show avatar on banner"
+                      value={cfg.showGitBadge} onChange={v => set('showGitBadge', v)} />
+                  </div>
+
+                  {/* Preview */}
+                  {cfg.gitUsername && cfg.showGitBadge && (
+                    <div style={{
+                      background: '#07090C', border: '0.5px solid var(--border)',
+                      borderRadius: 7, padding: '12px 16px',
+                      display: 'flex', alignItems: 'center', gap: 12,
+                    }}>
+                      <img src={gitAvatarUrl(cfg.gitUsername, cfg.gitPlatform)}
+                        alt={cfg.gitUsername}
+                        width={28} height={28}
+                        style={{ borderRadius: '50%', objectFit: 'cover' }}
+                        onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
+                      <div>
+                        <div style={{ fontSize: 10, color: 'var(--text)', fontFamily: 'var(--mono)' }}>
+                          @{cfg.gitUsername}
+                        </div>
+                        <div style={{ fontSize: 8, color: 'var(--muted)', fontFamily: 'var(--mono)', marginTop: 2 }}>
+                          Avatar renders at extreme bottom-left
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Right sidebar */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                <span style={secLabel}>How it works</span>
+                <div style={{
+                  background: 'var(--surface2)', border: '0.5px solid var(--border)',
+                  borderRadius: 7, padding: '12px 14px',
+                }}>
+                  <div style={{ fontSize: 9, color: 'var(--tan)', fontFamily: 'var(--mono)', letterSpacing: '0.18em', marginBottom: 8 }}>BANNER RENDER</div>
+                  <div style={{ fontSize: 10, color: 'var(--muted)', fontFamily: 'var(--mono)', lineHeight: 1.9 }}>
+                    <div>• Platform icon + username text</div>
+                    <div>• Positioned at top-left corner</div>
+                    <div>• Supports GitHub / GitLab / GitBucket</div>
+                    <div>• Toggle on/off anytime</div>
+                  </div>
+                </div>
+
+                <div style={{
+                  background: 'var(--surface2)', border: '0.5px solid var(--border)',
+                  borderRadius: 7, padding: '12px 14px',
+                }}>
+                  <div style={{ fontSize: 9, color: 'var(--tan)', fontFamily: 'var(--mono)', letterSpacing: '0.18em', marginBottom: 8 }}>NOTE</div>
+                  <div style={{ fontSize: 10, color: 'var(--muted)', fontFamily: 'var(--mono)', lineHeight: 1.8 }}>
+                    The platform icon is rendered using Simple Icons CDN. The username links to the profile page.
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* EXPORT */}
           {tab === 'export' && (
             <div style={{ display: 'grid', gridTemplateColumns: '340px 1fr', gap: 40 }}>
@@ -587,7 +725,8 @@ export default function Studio() {
                     ['Team',     cfg.team || '-'],
                     ['Skills',   `${cfg.skills.length} selected`],
                     ['Logos',    `${cfg.logos.length} added`],
-                  ].map(([k, v]) => (
+                    ['Git Badge', cfg.showGitBadge && cfg.gitUsername ? `@${cfg.gitUsername} (${cfg.gitPlatform})` : '-'],
+                  ].filter(Boolean).map(([k, v]) => (
                     <div key={k} style={{
                       background: 'var(--surface2)', border: '0.5px solid var(--border)',
                       borderRadius: 7, padding: '9px 13px',
