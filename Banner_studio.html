@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Alphonso AI — Banner Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --tan:#C79A6F;--tan-dim:rgba(199,154,111,0.13);--tan-mid:rgba(199,154,111,0.38);
+  --bg:#07090C;--surface:#0D1117;--surface2:#121820;
+  --border:rgba(199,154,111,0.14);--border2:rgba(199,154,111,0.3);
+  --text:#E8E4DE;--muted:rgba(232,228,222,0.38);
+  --mono:'IBM Plex Mono','Courier New',monospace;--sans:'IBM Plex Sans',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--mono);min-height:100vh;overflow-x:hidden}
+
+/* Topbar */
+.topbar{position:sticky;top:0;z-index:100;background:rgba(7,9,12,0.95);backdrop-filter:blur(16px);border-bottom:.5px solid var(--border);padding:0 36px;height:60px;display:flex;align-items:center;justify-content:space-between}
+.tb-brand{display:flex;align-items:center;gap:12px}
+.tb-logo{width:34px;height:34px;background:var(--tan);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:Georgia,serif;font-weight:300;font-size:20px;color:#1a1a1a;flex-shrink:0}
+.tb-name{font-size:11px;font-weight:600;letter-spacing:5px}
+.tb-sub{font-size:9px;color:var(--tan);letter-spacing:3px;margin-top:1px}
+.tb-right{font-size:9px;color:var(--muted);letter-spacing:2px;text-align:right;line-height:2}
+.tb-right b{color:var(--tan);font-weight:500}
+
+/* Hero */
+.hero{padding:52px 36px 40px;max-width:1160px;margin:0 auto;display:grid;grid-template-columns:1fr auto;align-items:end;gap:28px}
+.eyebrow{font-size:9px;letter-spacing:4px;color:var(--tan);margin-bottom:12px;display:flex;align-items:center;gap:9px}
+.eyebrow::before{content:'';width:22px;height:.5px;background:var(--tan);display:block}
+.hero h1{font-size:clamp(26px,3.2vw,44px);font-weight:600;letter-spacing:1px;line-height:1.1;margin-bottom:12px}
+.hero h1 em{color:var(--tan);font-style:normal}
+.hero-sub{font-family:var(--sans);font-size:13px;font-weight:300;color:var(--muted);line-height:1.8;max-width:420px}
+.hero-meta{text-align:right;font-size:9px;color:var(--muted);letter-spacing:2px;line-height:2.4;white-space:nowrap}
+.hero-meta b{color:var(--tan);font-weight:500}
+
+.rule{max-width:1160px;margin:0 auto;padding:0 36px}
+.rule hr{border:none;border-top:.5px solid var(--border)}
+
+/* Studio */
+.studio{max-width:1160px;margin:0 auto;padding:40px 36px 80px;display:grid;grid-template-columns:1fr 316px;gap:32px;align-items:start}
+@media(max-width:840px){.studio,.hero{grid-template-columns:1fr}.hero-meta{text-align:left}}
+
+/* Preview */
+.preview-panel{display:flex;flex-direction:column;gap:12px}
+.preview-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.prev-label{font-size:9px;letter-spacing:3px;color:var(--muted);display:flex;align-items:center;gap:7px}
+.pip{width:6px;height:6px;border-radius:50%;background:var(--tan);animation:pip 2s ease-in-out infinite}
+@keyframes pip{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(.7)}}
+.badge{display:inline-flex;gap:5px;align-items:center;background:var(--surface);border:.5px solid var(--border);border-radius:4px;padding:4px 9px;font-size:9px;color:var(--muted);letter-spacing:1px}
+.badge b{color:var(--tan);font-weight:500}
+
+/* LinkedIn overlay hint */
+.preview-wrap{position:relative}
+.li-overlay{position:absolute;top:0;left:0;height:100%;width:32%;background:rgba(199,154,111,.045);border-right:.5px dashed rgba(199,154,111,.25);border-radius:10px 0 0 10px;pointer-events:none;display:flex;align-items:flex-end;justify-content:center;padding-bottom:8px;transition:opacity .3s}
+.li-overlay span{font-size:8px;color:rgba(199,154,111,.5);letter-spacing:2px;white-space:nowrap;transform:rotate(0deg)}
+.li-overlay-toggle{font-size:9px;color:var(--tan);letter-spacing:1px;cursor:pointer;border:none;background:transparent;font-family:var(--mono);opacity:.7}
+.li-overlay-toggle:hover{opacity:1}
+
+.preview-frame{background:var(--surface);border:.5px solid var(--border);border-radius:10px;overflow:hidden;position:relative}
+#preview-svg{width:100%;display:block}
+
+/* Sidebar */
+.sidebar{display:flex;flex-direction:column;gap:20px;position:sticky;top:76px}
+.card{background:var(--surface);border:.5px solid var(--border);border-radius:10px;overflow:hidden}
+.card-head{padding:11px 15px;border-bottom:.5px solid var(--border);font-size:9px;letter-spacing:3px;color:var(--tan);display:flex;align-items:center;gap:7px}
+.step{width:14px;height:14px;border:.5px solid var(--tan-mid);border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:8px;color:var(--tan)}
+.card-body{padding:14px;display:flex;flex-direction:column;gap:13px}
+
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase}
+.field input{background:var(--surface2);border:.5px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--mono);font-size:13px;padding:9px 11px;outline:none;transition:border-color .2s,background .2s;width:100%}
+.field input:focus{border-color:var(--tan);background:rgba(199,154,111,.04)}
+.field input::placeholder{color:rgba(232,228,222,.16)}
+
+/* Role chips */
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{background:transparent;border:.5px solid var(--border2);border-radius:3px;color:var(--muted);font-family:var(--mono);font-size:9px;letter-spacing:.5px;padding:4px 8px;cursor:pointer;transition:all .15s;white-space:nowrap}
+.chip:hover{border-color:var(--tan);color:var(--tan)}
+.chip.active{background:var(--tan);border-color:var(--tan);color:#1a1a1a;font-weight:600}
+
+/* Template grid */
+.tpl-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:13px}
+.tpl-card{border:.5px solid var(--border);border-radius:7px;overflow:hidden;cursor:pointer;transition:border-color .2s,transform .15s;background:var(--surface2)}
+.tpl-card:hover{border-color:var(--tan-mid);transform:translateY(-1px)}
+.tpl-card.active{border-color:var(--tan);box-shadow:0 0 0 1px rgba(199,154,111,.18)}
+.tpl-thumb{width:100%;aspect-ratio:4/1;display:block}
+.tpl-lbl{padding:6px 8px;font-size:8px;letter-spacing:2px;color:var(--muted);display:flex;align-items:center;justify-content:space-between}
+.tpl-card.active .tpl-lbl{color:var(--tan)}
+.tpl-dot{width:5px;height:5px;border-radius:50%;background:var(--border)}
+.tpl-card.active .tpl-dot{background:var(--tan)}
+
+/* Skills picker */
+.skills-section{display:flex;flex-direction:column;gap:8px}
+.skill-search{background:var(--surface2);border:.5px solid var(--border);border-radius:5px;color:var(--text);font-family:var(--mono);font-size:11px;padding:7px 10px;outline:none;width:100%;transition:border-color .2s}
+.skill-search:focus{border-color:var(--tan)}
+.skill-search::placeholder{color:rgba(232,228,222,.16)}
+.skill-categories{display:flex;gap:5px;flex-wrap:wrap}
+.cat-btn{background:transparent;border:.5px solid var(--border);border-radius:3px;color:var(--muted);font-family:var(--mono);font-size:8px;letter-spacing:1px;padding:3px 7px;cursor:pointer;transition:all .15s}
+.cat-btn:hover,.cat-btn.active{background:var(--tan-dim);border-color:var(--tan-mid);color:var(--tan)}
+.skills-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;max-height:200px;overflow-y:auto;padding-right:2px}
+.skills-grid::-webkit-scrollbar{width:3px}
+.skills-grid::-webkit-scrollbar-track{background:transparent}
+.skills-grid::-webkit-scrollbar-thumb{background:var(--tan-dim);border-radius:2px}
+.skill-btn{display:flex;flex-direction:column;align-items:center;gap:3px;background:var(--surface2);border:.5px solid var(--border);border-radius:6px;padding:7px 4px;cursor:pointer;transition:all .15s;position:relative}
+.skill-btn:hover{border-color:var(--tan-mid)}
+.skill-btn.selected{border-color:var(--tan);background:rgba(199,154,111,.08)}
+.skill-btn.selected::after{content:'✓';position:absolute;top:2px;right:3px;font-size:7px;color:var(--tan)}
+.skill-btn img{width:22px;height:22px;object-fit:contain}
+.skill-btn span{font-size:7px;color:var(--muted);letter-spacing:.3px;text-align:center;line-height:1.2}
+.selected-bar{display:flex;flex-wrap:wrap;gap:5px;min-height:20px}
+.sel-tag{display:flex;align-items:center;gap:4px;background:var(--tan-dim);border:.5px solid var(--tan-mid);border-radius:3px;padding:3px 6px;font-size:8px;color:var(--tan);letter-spacing:.5px}
+.sel-tag img{width:12px;height:12px;object-fit:contain}
+.sel-tag button{background:none;border:none;color:var(--tan);cursor:pointer;font-size:9px;padding:0;line-height:1;opacity:.7}
+.sel-tag button:hover{opacity:1}
+.skills-note{font-size:8px;color:var(--muted);letter-spacing:.5px;line-height:1.7}
+
+/* Export */
+.btn-dl{width:100%;background:var(--tan);color:#1a1a1a;border:none;border-radius:7px;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:3px;padding:12px;cursor:pointer;transition:opacity .15s,transform .1s;text-transform:uppercase;display:flex;align-items:center;justify-content:center;gap:7px}
+.btn-dl:hover{opacity:.86}.btn-dl:active{transform:scale(.98)}
+.btn-sec{width:100%;background:transparent;color:var(--tan);border:.5px solid var(--border2);border-radius:7px;font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:3px;padding:10px;cursor:pointer;transition:all .15s;text-transform:uppercase;display:flex;align-items:center;justify-content:center;gap:6px}
+.btn-sec:hover{background:rgba(199,154,111,.07);border-color:var(--tan)}
+.export-row{display:flex;gap:6px}
+.export-row .btn-dl,.export-row .btn-sec{font-size:9px;padding:10px 6px}
+
+/* Toast */
+.toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(70px);background:var(--tan);color:#1a1a1a;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:2px;padding:10px 20px;border-radius:5px;transition:transform .3s cubic-bezier(.34,1.56,.64,1);z-index:9999;pointer-events:none;white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+/* Showcase panel */
+.showcase-panel{background:var(--surface);border:.5px solid var(--border);border-radius:10px;overflow:hidden}
+.showcase-head{padding:11px 16px;border-bottom:.5px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.showcase-body{padding:16px;min-height:88px}
+
+footer{border-top:.5px solid var(--border);padding:20px 36px;max-width:1160px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;font-size:9px;color:var(--muted);letter-spacing:2px}
+footer b{color:var(--tan);font-weight:500}
+.cm{position:fixed;width:44px;height:44px;pointer-events:none;z-index:10;opacity:.12}
+.cm-tl{top:0;left:0;border-top:.5px solid var(--tan);border-left:.5px solid var(--tan)}
+.cm-br{bottom:0;right:0;border-bottom:.5px solid var(--tan);border-right:.5px solid var(--tan)}
+</style>
+</head>
+<body>
+<div class="cm cm-tl"></div>
+<div class="cm cm-br"></div>
+
+<header class="topbar">
+  <div class="tb-brand">
+    <div class="tb-logo">α</div>
+    <div><div class="tb-name">ALPHONSO AI</div><div class="tb-sub">BANNER STUDIO</div></div>
+  </div>
+  <div class="tb-right">INTERNAL TOOL · v3.0<br><b>ALPHONSO AI</b></div>
+</header>
+
+<section class="hero">
+  <div>
+    <div class="eyebrow">EMPLOYEE IDENTITY KIT</div>
+    <h1>Your Banner.<br><em>Your Role.</em></h1>
+    <p class="hero-sub">Pick a template, add your name, role and skills — download a retina PNG or editable SVG instantly. Profile-photo-safe layout built in.</p>
+  </div>
+  <div class="hero-meta">FORMAT <b>SVG · PNG</b><br>SIZE <b>1584 × 396</b><br>PLATFORM <b>LinkedIn</b><br>BRAND <b>Alphonso AI</b></div>
+</section>
+<div class="rule"><hr/></div>
+
+<main class="studio">
+  <!-- Preview -->
+  <div class="preview-panel">
+    <div class="preview-top">
+      <div class="prev-label"><div class="pip"></div>LIVE PREVIEW</div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <button class="li-overlay-toggle" onclick="toggleOverlay()" id="overlay-btn">👁 Show LinkedIn Zone</button>
+        <div class="badge">1584 <b>×</b> 396 · LinkedIn</div>
+      </div>
+    </div>
+    <div class="preview-wrap">
+      <div class="li-overlay" id="li-overlay" style="opacity:0"><span>PROFILE PHOTO ZONE</span></div>
+      <div class="preview-frame">
+        <svg id="preview-svg" viewBox="0 0 1584 396" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="pg" width="48" height="48" patternUnits="userSpaceOnUse">
+              <path d="M 48 0 L 0 0 0 48" fill="none" stroke="#C79A6F" stroke-width="0.3" opacity="0.14"/>
+            </pattern>
+            <pattern id="dots" width="32" height="32" patternUnits="userSpaceOnUse">
+              <circle cx="16" cy="16" r="0.7" fill="#C79A6F" opacity="0.22"/>
+            </pattern>
+            <pattern id="bp-grid" width="40" height="40" patternUnits="userSpaceOnUse">
+              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#4A7FBF" stroke-width="0.4" opacity="0.2"/>
+            </pattern>
+          </defs>
+          <g id="svg-root"></g>
+        </svg>
+      </div>
+    </div>
+    <div class="badge" id="fname-badge" style="font-size:9px;align-self:flex-start">alphonso_ai_banner.svg / .png</div>
+
+    <!-- Asset Showcase -->
+    <div class="showcase-panel">
+      <div class="showcase-head">
+        <div class="prev-label"><span style="letter-spacing:3px;font-size:9px;color:var(--muted)">SKILL ASSETS</span></div>
+        <span style="font-size:9px;color:var(--muted);letter-spacing:1px">Hover to inspect · Click to remove</span>
+      </div>
+      <div class="showcase-body" id="showcase">
+        <div style="display:flex;align-items:center;justify-content:center;height:100px;font-size:10px;color:var(--muted);letter-spacing:2px">SELECT SKILLS TO SEE ASSET PREVIEW</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+
+    <!-- Identity -->
+    <div class="card">
+      <div class="card-head"><div class="step">1</div>IDENTITY</div>
+      <div class="card-body">
+        <div class="field"><label>Full Name</label><input type="text" id="inp-name" placeholder="Jane Smith" maxlength="28" autocomplete="off"/></div>
+        <div class="field"><label>Your Role</label><input type="text" id="inp-role" placeholder="AI Engineer" maxlength="28" autocomplete="off"/></div>
+        <div class="chips" id="chips">
+          <button class="chip" data-role="AI Engineer">AI Engineer</button>
+          <button class="chip" data-role="Data Analyst">Data Analyst</button>
+          <button class="chip" data-role="SDE">SDE</button>
+          <button class="chip" data-role="SWE">SWE</button>
+          <button class="chip" data-role="ML Engineer">ML Engineer</button>
+          <button class="chip" data-role="Data Scientist">Data Scientist</button>
+          <button class="chip" data-role="Product Manager">Product Manager</button>
+          <button class="chip" data-role="DevOps Engineer">DevOps Engineer</button>
+          <button class="chip" data-role="Research Engineer">Research Eng.</button>
+          <button class="chip" data-role="UX Designer">UX Designer</button>
+          <button class="chip" data-role="Solutions Architect">Solutions Arch.</button>
+          <button class="chip" data-role="Co-Founder">Co-Founder</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Template -->
+    <div class="card">
+      <div class="card-head"><div class="step">2</div>TEMPLATE</div>
+      <div class="tpl-grid" id="tpl-grid"></div>
+    </div>
+
+    <!-- Skills -->
+    <div class="card">
+      <div class="card-head"><div class="step">3</div>SKILLS & TOOLS</div>
+      <div class="card-body">
+        <div class="skills-section">
+          <input class="skill-search" type="text" id="skill-search" placeholder="Search Python, AWS, React…" autocomplete="off"/>
+          <div class="skill-categories" id="skill-cats"></div>
+          <div class="skills-grid" id="skills-grid"></div>
+          <div style="display:flex;flex-direction:column;gap:5px">
+            <div style="font-size:9px;color:var(--tan);letter-spacing:2px">SELECTED &nbsp;<span id="sel-count" style="opacity:.6">0</span></div>
+            <div class="selected-bar" id="selected-bar"><span style="font-size:9px;color:var(--muted)">None selected — pick from the grid above</span></div>
+          </div>
+          <p class="skills-note">Icons wrap in rows of 9 from the bottom-right corner. No limit.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Export -->
+    <div class="card">
+      <div class="card-head"><div class="step">4</div>EXPORT</div>
+      <div class="card-body">
+        <div class="export-row">
+          <button class="btn-dl" onclick="downloadPNG()">
+            <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 1v7M3 5.5l2.5 2.5L8 5.5M1 10h9" stroke="#1a1a1a" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>PNG
+          </button>
+          <button class="btn-sec" onclick="downloadSVG()">
+            <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 1v7M3 5.5l2.5 2.5L8 5.5M1 10h9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>SVG
+          </button>
+        </div>
+        <button class="btn-sec" onclick="copySVG()" style="font-size:9px">Copy SVG Code</button>
+        <p style="font-size:9px;color:var(--muted);letter-spacing:.8px;line-height:1.9;text-align:center">PNG exports at 2× (3168×792)<br>Retina-ready, no converter needed.</p>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<footer>
+  <div>© 2025 <b>ALPHONSO AI</b> · INTERNAL USE ONLY</div>
+  <div>BANNER STUDIO v3.0</div>
+</footer>
+<div class="toast" id="toast"></div>
+<canvas id="export-canvas" style="display:none"></canvas>
+
+<script>
+/* ═══════════════════════════
+   SKILLS DATA
+   devicons CDN + custom SVGs for Claude/OpenAI
+═══════════════════════════ */
+const CDN = 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons';
+const SKILLS = [
+  // AI/ML
+  { id:'python',    name:'Python',     cat:'AI/ML',    src:`${CDN}/python/python-original.svg` },
+  { id:'pytorch',   name:'PyTorch',    cat:'AI/ML',    src:`${CDN}/pytorch/pytorch-original.svg` },
+  { id:'tensorflow',name:'TensorFlow', cat:'AI/ML',    src:`${CDN}/tensorflow/tensorflow-original.svg` },
+  { id:'jupyter',   name:'Jupyter',    cat:'AI/ML',    src:`${CDN}/jupyter/jupyter-original.svg` },
+  { id:'numpy',     name:'NumPy',      cat:'AI/ML',    src:`${CDN}/numpy/numpy-original.svg` },
+  { id:'pandas',    name:'Pandas',     cat:'AI/ML',    src:`${CDN}/pandas/pandas-original.svg` },
+  { id:'scikitlearn',name:'Sklearn',   cat:'AI/ML',    src:`${CDN}/scikitlearn/scikitlearn-original.svg` },
+  { id:'openai',    name:'OpenAI',     cat:'AI/ML',    src:'', customSvg: `<svg viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg"><path d="M22.28 9.78a5.59 5.59 0 00-.48-4.59 5.65 5.65 0 00-6.08-2.71A5.6 5.6 0 0011.6.93a5.64 5.64 0 00-5.38 3.9 5.6 5.6 0 00-3.74 2.72 5.65 5.65 0 00.7 6.62 5.6 5.6 0 00.48 4.6 5.65 5.65 0 006.08 2.7 5.6 5.6 0 004.12 1.56 5.64 5.64 0 005.38-3.91 5.6 5.6 0 003.73-2.72 5.65 5.65 0 00-.69-6.62zm-8.36 11.72a4.18 4.18 0 01-2.68-.97l.13-.07 4.45-2.57a.74.74 0 00.37-.64v-6.27l1.88 1.09a.07.07 0 01.04.05v5.2a4.2 4.2 0 01-4.19 4.18zm-9-3.85a4.18 4.18 0 01-.5-2.81l.13.08 4.45 2.57a.73.73 0 00.74 0l5.43-3.14v2.18a.07.07 0 01-.03.06l-4.5 2.6a4.2 4.2 0 01-5.72-1.54zm-1.22-9.76a4.18 4.18 0 012.18-1.84v5.28a.73.73 0 00.37.64l5.43 3.13-1.88 1.09a.07.07 0 01-.07 0L5.3 13.66a4.2 4.2 0 01-.6-5.77zm15.44 3.6l-5.43-3.14 1.88-1.08a.07.07 0 01.07 0l4.53 2.62a4.19 4.19 0 01-.65 7.56v-5.28a.73.73 0 00-.4-.68zm1.87-2.83l-.13-.08-4.44-2.59a.73.73 0 00-.74 0L10.26 9.6V7.42a.07.07 0 01.03-.06l4.5-2.6a4.19 4.19 0 016.22 4.34zm-11.78 3.87L7.35 11.44a.07.07 0 01-.04-.06V6.2a4.19 4.19 0 016.87-3.22l-.13.07L9.6 5.62a.74.74 0 00-.37.64v6.27l-1.9-1.09zm1.02-2.2l2.41-1.4 2.42 1.39v2.78l-2.42 1.4-2.41-1.4V10.33z"/></svg>` },
+  { id:'claude',    name:'Claude',     cat:'AI/ML',    src:'', customSvg: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4.709 15.955l4.72-2.647.08-.23-.08-.128H9.2l-.79-.048-2.698-.073-2.339-.097-1.55-.122-.571-.121L1 12.139l.055-.352.51-.321.881.03 1.426.103 2.34.158 2.52.158.79.06h.328l.055-.182-.006-.11-.146-.12-2.065-1.086-2.217-1.19-1.9-1.068-.699-.45-.328-.377-.012-.55.245-.437.619-.097.697.173 1.295.753 2.119 1.262 1.999 1.208.662.413.157-.109V9.5l-.225-.589-.662-1.918-.881-2.507-.303-1.086-.073-.997.456-.735.668-.097.729.462.389 1.055.832 2.373.832 2.337.547 1.603.157.644h.182l.097-.12V9.34l.456-2.288.51-2.373.34-1.244.42-.815.729-.413.881.267.395.718-.024.705-.51 1.918-.777 2.9-.34 1.603v.17l.146.048.073-.048.72-.851 1.344-1.536 1.392-1.555.832-.948.857-.765.881-.146.668.462.157.765-.34.705-.832.948-1.404 1.652-1.04 1.28-.937 1.226-.34.535.012.11.134.024.596-.34 1.064-.729 1.841-1.086.97-.328.462.134.583.462.316.741-.073.632-.419.462-1.15.765-1.914 1.14-1.55.862-.553.401v.146l.073.036.754-.097 2.485-.267 2.243-.194 1.502-.024.668.34.243.668-.21.632-.965.413-1.381.073-2.388.085-2.01.122-1.915.194h-.662l-.048.11.048.072 1.138.705 1.769 1.129 1.575 1.019.868.741.218.717-.337.625-.832.061-.941-.413-1.611-1.14-1.745-1.208-1.19-.851-.303-.073-.279.242.437.948.307.705.832 1.98.698 1.651.134.668-.364.559-.735.042-.704-.431-1.016-2.288-.509-1.13-.857-1.98-.243-.668-.267-.607h-.133l-.085.413-.607 2.9-.547 2.117-.476 1.093-.662.456-.832-.267-.388-.668.036-.607.315-.851.662-2.178.892-2.9.413-1.841v-.157l-.121-.048-.158.194-1.222 1.67-1.344 1.892-.977 1.19-.668.462-.832-.073-.51-.462-.036-.705.571-.851.41-.474 1.14-1.46 1.367-1.781 1.137-1.49.376-.462.012-.146-.073-.06H15.2l-.976.34-2.097.765-1.745.632-.97.133-.638-.34-.267-.668.182-.705.541-.34 1.611-.571 2.243-.826 1.745-.668.607-.267.012-.158-.11-.048-.972.012z" fill="#C79A6F"/></svg>` },
+  // Cloud
+  { id:'aws',       name:'AWS',        cat:'Cloud',    src:`${CDN}/amazonwebservices/amazonwebservices-plain-wordmark.svg` },
+  { id:'azure',     name:'Azure',      cat:'Cloud',    src:`${CDN}/azure/azure-original.svg` },
+  { id:'gcp',       name:'GCP',        cat:'Cloud',    src:`${CDN}/googlecloud/googlecloud-original.svg` },
+  { id:'docker',    name:'Docker',     cat:'Cloud',    src:`${CDN}/docker/docker-original.svg` },
+  { id:'kubernetes',name:'K8s',        cat:'Cloud',    src:`${CDN}/kubernetes/kubernetes-original.svg` },
+  { id:'terraform', name:'Terraform',  cat:'Cloud',    src:`${CDN}/terraform/terraform-original.svg` },
+  // Languages
+  { id:'javascript',name:'JavaScript', cat:'Languages', src:`${CDN}/javascript/javascript-original.svg` },
+  { id:'typescript',name:'TypeScript', cat:'Languages', src:`${CDN}/typescript/typescript-original.svg` },
+  { id:'rust',      name:'Rust',       cat:'Languages', src:`${CDN}/rust/rust-original.svg` },
+  { id:'go',        name:'Go',         cat:'Languages', src:`${CDN}/go/go-original.svg` },
+  { id:'java',      name:'Java',       cat:'Languages', src:`${CDN}/java/java-original.svg` },
+  { id:'cplusplus', name:'C++',        cat:'Languages', src:`${CDN}/cplusplus/cplusplus-original.svg` },
+  { id:'r',         name:'R',          cat:'Languages', src:`${CDN}/r/r-original.svg` },
+  { id:'scala',     name:'Scala',      cat:'Languages', src:`${CDN}/scala/scala-original.svg` },
+  // Web/Frameworks
+  { id:'react',     name:'React',      cat:'Web',      src:`${CDN}/react/react-original.svg` },
+  { id:'nextjs',    name:'Next.js',    cat:'Web',      src:`${CDN}/nextjs/nextjs-original.svg` },
+  { id:'nodejs',    name:'Node.js',    cat:'Web',      src:`${CDN}/nodejs/nodejs-original.svg` },
+  { id:'fastapi',   name:'FastAPI',    cat:'Web',      src:`${CDN}/fastapi/fastapi-original.svg` },
+  { id:'flask',     name:'Flask',      cat:'Web',      src:`${CDN}/flask/flask-original.svg` },
+  // Data
+  { id:'postgresql',name:'Postgres',   cat:'Data',     src:`${CDN}/postgresql/postgresql-original.svg` },
+  { id:'mongodb',   name:'MongoDB',    cat:'Data',     src:`${CDN}/mongodb/mongodb-original.svg` },
+  { id:'apachekafka',name:'Kafka',     cat:'Data',     src:`${CDN}/apachekafka/apachekafka-original.svg` },
+  { id:'redis',     name:'Redis',      cat:'Data',     src:`${CDN}/redis/redis-original.svg` },
+  { id:'elasticsearch',name:'Elastic', cat:'Data',     src:`${CDN}/elasticsearch/elasticsearch-original.svg` },
+  // Tools
+  { id:'git',       name:'Git',        cat:'Tools',    src:`${CDN}/git/git-original.svg` },
+  { id:'linux',     name:'Linux',      cat:'Tools',    src:`${CDN}/linux/linux-original.svg` },
+  { id:'vim',       name:'Vim',        cat:'Tools',    src:`${CDN}/vim/vim-original.svg` },
+  { id:'vscode',    name:'VS Code',    cat:'Tools',    src:`${CDN}/vscode/vscode-original.svg` },
+  { id:'github',    name:'GitHub',     cat:'Tools',    src:`${CDN}/github/github-original.svg` },
+];
+
+const CATS = ['All', ...new Set(SKILLS.map(s => s.cat))];
+let activeCategory = 'All';
+let skillSearch = '';
+let selectedSkills = [];
+
+/* ═══════════════════════════
+   TEMPLATES
+═══════════════════════════ */
+const TEMPLATES = [
+  {
+    id:'noir', name:'NOIR', desc:'Dark glitch',
+    colors:{ bg:'#0B0E11', text:'#E8E4DE', accent:'#C79A6F', sub:'#A8A4A0', nameCol:'#C79A6F', grid:'pg', glitch:true },
+    extraDefs: '',
+    bgShape: (c) => `<rect width="1584" height="396" fill="${c.bg}"/><rect width="1584" height="396" fill="url(#pg)"/><rect x="1380" y="20" width="180" height="120" fill="none" stroke="${c.accent}" stroke-width="0.5" opacity="0.2"/><rect x="1420" y="60" width="100" height="60" fill="none" stroke="${c.accent}" stroke-width="0.4" opacity="0.11"/><rect x="24" y="260" width="120" height="100" fill="none" stroke="${c.accent}" stroke-width="0.4" opacity="0.15"/>`,
+    thumb: `<svg viewBox="0 0 400 100" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="100" fill="#0B0E11"/><circle cx="50" cy="50" r="26" fill="#C79A6F"/><text x="50" y="57" text-anchor="middle" font-size="28" font-family="Georgia,serif" font-weight="300" fill="#1a1a1a">α</text><text x="90" y="57" font-size="22" font-family="Courier New,monospace" font-weight="500" fill="#E8E4DE" letter-spacing="2">ALPHONSO AI</text></svg>`
+  },
+  {
+    id:'blueprint', name:'BLUEPRINT', desc:'Engineering',
+    colors:{ bg:'#0A1628', text:'#C8DEFF', accent:'#C79A6F', sub:'#7AADDF', nameCol:'#C79A6F', grid:'bp-grid', glitch:false },
+    extraDefs: '',
+    bgShape: (c) => `<rect width="1584" height="396" fill="${c.bg}"/><rect width="1584" height="396" fill="url(#bp-grid)"/><line x1="0" y1="198" x2="1584" y2="198" stroke="#4A7FBF" stroke-width="0.4" opacity="0.2"/><rect x="1340" y="18" width="220" height="140" fill="none" stroke="#4A7FBF" stroke-width="0.6" opacity="0.25"/><text x="1555" y="168" text-anchor="end" font-size="9" font-family="Courier New,monospace" fill="#4A7FBF" opacity="0.45" letter-spacing="1">REV 1.0 · AIA-001</text>`,
+    thumb: `<svg viewBox="0 0 400 100" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="100" fill="#0A1628"/><circle cx="50" cy="50" r="26" fill="#C79A6F"/><text x="50" y="57" text-anchor="middle" font-size="28" font-family="Georgia,serif" font-weight="300" fill="#0A1628">α</text><text x="90" y="57" font-size="22" font-family="Courier New,monospace" font-weight="500" fill="#C8DEFF" letter-spacing="2">ALPHONSO AI</text></svg>`
+  },
+  {
+    id:'editorial', name:'EDITORIAL', desc:'Light & clean',
+    colors:{ bg:'#F4F0E8', text:'#1a1a1a', accent:'#C79A6F', sub:'#8B6E50', nameCol:'#5a4a38', grid:null, glitch:false },
+    extraDefs: '',
+    bgShape: (c) => `<rect width="1584" height="396" fill="${c.bg}"/><line x1="0" y1="4" x2="1584" y2="4" stroke="#1a1a1a" stroke-width="2.5" opacity="0.85"/><line x1="0" y1="392" x2="1584" y2="392" stroke="#1a1a1a" stroke-width="2.5" opacity="0.85"/><line x1="0" y1="11" x2="1584" y2="11" stroke="${c.accent}" stroke-width="0.8" opacity="0.5"/><line x1="0" y1="385" x2="1584" y2="385" stroke="${c.accent}" stroke-width="0.8" opacity="0.5"/>`,
+    thumb: `<svg viewBox="0 0 400 100" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="100" fill="#F4F0E8"/><line x1="0" y1="2" x2="400" y2="2" stroke="#1a1a1a" stroke-width="2"/><line x1="0" y1="98" x2="400" y2="98" stroke="#1a1a1a" stroke-width="2"/><circle cx="50" cy="50" r="26" fill="#C79A6F"/><text x="50" y="57" text-anchor="middle" font-size="28" font-family="Georgia,serif" font-weight="300" fill="#1a1a1a">α</text><text x="90" y="57" font-size="22" font-family="Courier New,monospace" font-weight="500" fill="#1a1a1a" letter-spacing="2">ALPHONSO AI</text></svg>`
+  },
+  {
+    id:'forge', name:'FORGE', desc:'Warm gradient',
+    colors:{ bg:'#1A0E05', text:'#F0C898', accent:'#C79A6F', sub:'#A08060', nameCol:'#C79A6F', grid:'dots', glitch:false },
+    extraDefs: `<linearGradient id="forge-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#1A0E05"/><stop offset="55%" stop-color="#100A06"/><stop offset="100%" stop-color="#0D1018"/></linearGradient><radialGradient id="forge-glow" cx="18%" cy="50%" r="40%"><stop offset="0%" stop-color="#3D2210" stop-opacity="0.8"/><stop offset="100%" stop-color="transparent" stop-opacity="0"/></radialGradient>`,
+    bgShape: (c) => `<rect width="1584" height="396" fill="url(#forge-grad)"/><rect width="1584" height="396" fill="url(#forge-glow)"/><rect width="1584" height="396" fill="url(#dots)"/><line x1="0" y1="1" x2="1584" y2="1" stroke="${c.accent}" stroke-width="1" opacity="0.4"/><line x1="0" y1="395" x2="1584" y2="395" stroke="${c.accent}" stroke-width="1" opacity="0.4"/>`,
+    thumb: `<svg viewBox="0 0 400 100" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="fg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#1A0E05"/><stop offset="100%" stop-color="#0D1018"/></linearGradient></defs><rect width="400" height="100" fill="url(#fg)"/><circle cx="50" cy="50" r="26" fill="#C79A6F"/><text x="50" y="57" text-anchor="middle" font-size="28" font-family="Georgia,serif" font-weight="300" fill="#1A0E05">α</text><text x="90" y="57" font-size="22" font-family="Courier New,monospace" font-weight="500" fill="#F0C898" letter-spacing="2">ALPHONSO AI</text></svg>`
+  },
+  {
+    id:'outlined', name:'OUTLINED', desc:'Ultra minimal',
+    colors:{ bg:'#080B0F', text:'#E8E4DE', accent:'#C79A6F', sub:'#808080', nameCol:'#C79A6F', grid:null, glitch:false },
+    extraDefs: '',
+    bgShape: (c) => `<rect width="1584" height="396" fill="${c.bg}"/><rect x="18" y="18" width="1548" height="360" fill="none" stroke="${c.accent}" stroke-width="0.7" opacity="0.28"/><rect x="28" y="28" width="1528" height="340" fill="none" stroke="${c.accent}" stroke-width="0.3" opacity="0.13"/>`,
+    thumb: `<svg viewBox="0 0 400 100" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="100" fill="#080B0F"/><rect x="3" y="3" width="394" height="94" fill="none" stroke="#C79A6F" stroke-width="0.7" opacity="0.3"/><circle cx="50" cy="50" r="24" fill="none" stroke="#C79A6F" stroke-width="1.2" opacity="0.6"/><circle cx="50" cy="50" r="20" fill="#C79A6F"/><text x="50" y="57" text-anchor="middle" font-size="24" font-family="Georgia,serif" font-weight="300" fill="#080B0F">α</text><text x="88" y="57" font-size="22" font-family="Courier New,monospace" font-weight="500" fill="#E8E4DE" letter-spacing="2">ALPHONSO AI</text></svg>`
+  },
+  {
+    id:'midnight', name:'MIDNIGHT', desc:'Deep navy',
+    colors:{ bg:'#060D1A', text:'#B8C8E8', accent:'#C79A6F', sub:'#7090B8', nameCol:'#C79A6F', grid:'pg', glitch:false },
+    extraDefs: '',
+    bgShape: (c) => `<rect width="1584" height="396" fill="${c.bg}"/><rect width="1584" height="396" fill="url(#pg)" opacity="0.45"/><rect x="1380" y="20" width="180" height="120" fill="none" stroke="#4A6FA5" stroke-width="0.5" opacity="0.28"/><rect x="24" y="260" width="120" height="100" fill="none" stroke="#4A6FA5" stroke-width="0.4" opacity="0.2"/>`,
+    thumb: `<svg viewBox="0 0 400 100" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="100" fill="#060D1A"/><circle cx="50" cy="50" r="26" fill="#C79A6F"/><text x="50" y="57" text-anchor="middle" font-size="28" font-family="Georgia,serif" font-weight="300" fill="#060D1A">α</text><text x="90" y="57" font-size="22" font-family="Courier New,monospace" font-weight="500" fill="#B8C8E8" letter-spacing="2">ALPHONSO AI</text></svg>`
+  },
+];
+
+/* ═══════════════════════════
+   STATE
+═══════════════════════════ */
+let activeTpl = 'noir';
+let overlayVisible = false;
+
+/* ═══════════════════════════
+   HELPERS
+═══════════════════════════ */
+function $(id){ return document.getElementById(id); }
+function getInputs(){ return { name: $('inp-name').value.trim().toUpperCase(), role: $('inp-role').value.trim().toUpperCase() }; }
+
+/* ═══════════════════════════
+   LAYOUT BUILDER
+   Logo centered at x=380 (shifted left ~20% from old 580)
+   Text block starts right of logo
+   Skills wrap in rows from bottom-right corner
+═══════════════════════════ */
+// mode: 'preview' | 'svg' | 'skip'
+function buildContent(tpl, name, role, mode='preview') {
+  const c = tpl.colors;
+  const hasExtra = name || role;
+  const logoX = 380, logoR = 100;
+  const textX  = logoX + logoR + 32;  // 512
+  const brandY = hasExtra ? 188 : 210;
+
+  const glitch = c.glitch ? `
+    <text x="${textX-3}" y="${brandY}" text-anchor="start" font-size="90" font-family="'Courier New',Courier,monospace" font-weight="500" fill="#D93030" opacity="0.38" letter-spacing="9">ALPHONSO AI</text>
+    <text x="${textX+3}" y="${brandY}" text-anchor="start" font-size="90" font-family="'Courier New',Courier,monospace" font-weight="500" fill="#20C8C8" opacity="0.32" letter-spacing="9">ALPHONSO AI</text>` : '';
+
+  const sepLine = hasExtra ? `<line x1="${textX}" y1="${brandY+24}" x2="${textX+960}" y2="${brandY+24}" stroke="${c.accent}" stroke-width="0.5" opacity="0.3"/>` : '';
+  const nameLine = name ? `<text x="${textX}" y="${brandY+62}" text-anchor="start" font-size="32" font-family="'Courier New',Courier,monospace" font-weight="400" fill="${c.nameCol}" letter-spacing="4">${name}</text>` : '';
+  const roleLine = role ? `<text x="${textX}" y="${brandY+(name?96:62)}" text-anchor="start" font-size="22" font-family="'Courier New',Courier,monospace" font-weight="300" fill="${c.sub}" letter-spacing="5" opacity="0.85">// ${role}</text>` : '';
+
+  const skillsHtml = mode === 'skip' ? '' : buildSkillsStrip(c, mode);
+
+  // Accent line — always full width at bottom right
+  const accentLine = `<line x1="900" y1="356" x2="1556" y2="356" stroke="${c.accent}" stroke-width="0.7" opacity="0.35"/>`;
+
+  const logoEl = tpl.id === 'outlined'
+    ? `<circle cx="${logoX}" cy="198" r="${logoR+10}" fill="none" stroke="${c.accent}" stroke-width="1.5" opacity="0.6"/>
+       <circle cx="${logoX}" cy="198" r="${logoR+6}" fill="${c.accent}" opacity="0.07"/>
+       <circle cx="${logoX}" cy="198" r="${logoR}" fill="${c.accent}"/>
+       <text x="${logoX}" y="240" text-anchor="middle" font-size="140" font-family="Georgia,'Times New Roman',serif" font-weight="300" fill="${c.bg}">α</text>`
+    : `<circle cx="${logoX}" cy="198" r="${logoR}" fill="#C79A6F"/>
+       <text x="${logoX}" y="240" text-anchor="middle" font-size="140" font-family="Georgia,'Times New Roman',serif" font-weight="300" fill="${tpl.id==='blueprint' ? c.bg : '#1a1a1a'}">α</text>`;
+
+  return `
+    ${tpl.bgShape(c)}
+    ${logoEl}
+    ${glitch}
+    <text x="${textX}" y="${brandY}" text-anchor="start" font-size="90" font-family="'Courier New',Courier,monospace" font-weight="500" fill="${c.text}" letter-spacing="9">ALPHONSO AI</text>
+    ${sepLine}${nameLine}${roleLine}
+    ${accentLine}
+    ${skillsHtml}`;
+}
+
+/* ═══════════════════════════
+   SKILLS STRIP — wraps in rows, anchored bottom-right corner
+   Row 1 (bottom): icons 1–9 right-aligned at x=1556
+   Row 2 (above):  overflow icons, same right-edge
+   No limit on count — just keeps stacking rows upward
+═══════════════════════════ */
+function buildSkillsStrip(c, mode='preview') {
+  if (!selectedSkills.length) return '';
+  const sz = 40, gap = 10, margin = 24;
+  const RIGHT_EDGE = 1556;
+  const BOTTOM_EDGE = 368;
+  const PER_ROW = 9;  // fits 9 icons at sz=40,gap=10 within ~440px
+
+  const rows = [];
+  for (let i = 0; i < selectedSkills.length; i += PER_ROW) {
+    rows.push(selectedSkills.slice(i, i + PER_ROW));
+  }
+  rows.reverse(); // bottom row first
+
+  const rowH = sz + gap;
+  let svgParts = [];
+
+  rows.forEach((row, rowIdx) => {
+    const rowW  = row.length * (sz + gap) - gap;
+    const startX = RIGHT_EDGE - rowW;
+    const startY = BOTTOM_EDGE - margin - rowIdx * rowH;
+
+    row.forEach((s, i) => {
+      const x = startX + i * (sz + gap);
+      const y = startY;
+      if (s.customSvg) {
+        svgParts.push(`<g transform="translate(${x},${y})">
+          ${s.customSvg.replace('<svg viewBox="0 0 24 24"', `<svg viewBox="0 0 24 24" width="${sz}" height="${sz}"`)}
+        </g>`);
+      } else {
+        const errAttr = mode === 'preview' ? `onerror="this.style.display='none'"` : '';
+        svgParts.push(`<image href="${s.src}" x="${x}" y="${y}" width="${sz}" height="${sz}" opacity="0.88" ${errAttr}/>`);
+      }
+    });
+  });
+
+  return svgParts.join('\n');
+}
+
+/* ═══════════════════════════
+   CANVAS SKILL DRAWING — mirrors buildSkillsStrip geometry
+═══════════════════════════ */
+async function drawSkillsOnCanvas(ctx, scale) {
+  if (!selectedSkills.length) return;
+  const sz = 40, gap = 10, margin = 24;
+  const RIGHT_EDGE = 1556, BOTTOM_EDGE = 368;
+  const PER_ROW = 9;
+
+  const rows = [];
+  for (let i = 0; i < selectedSkills.length; i += PER_ROW) rows.push(selectedSkills.slice(i, i + PER_ROW));
+  rows.reverse();
+
+  const rowH = sz + gap;
+  const iconDataURLs = await Promise.all(selectedSkills.map(s => fetchIconAsDataURL(s)));
+  const allSkillsFlat = selectedSkills; // preserve original order
+
+  for (let rowIdx = 0; rowIdx < rows.length; rowIdx++) {
+    const row = rows[rowIdx];
+    const rowW  = row.length * (sz + gap) - gap;
+    const startX = RIGHT_EDGE - rowW;
+    const startY = BOTTOM_EDGE - margin - rowIdx * rowH;
+
+    for (let i = 0; i < row.length; i++) {
+      const s = row[i];
+      const globalIdx = allSkillsFlat.indexOf(s);
+      const dataUrl = iconDataURLs[globalIdx];
+      if (!dataUrl) continue;
+      const imgEl = await loadImageFromDataURL(dataUrl);
+      if (!imgEl) continue;
+      ctx.globalAlpha = 0.88;
+      ctx.drawImage(imgEl,
+        (startX + i * (sz + gap)) * scale,
+        startY * scale,
+        sz * scale, sz * scale
+      );
+      ctx.globalAlpha = 1;
+    }
+  }
+}
+
+/* ═══════════════════════════
+   RENDER PREVIEW
+═══════════════════════════ */
+function render() {
+  const { name, role } = getInputs();
+  const tpl = TEMPLATES.find(t => t.id === activeTpl);
+
+  // Rebuild defs
+  const svg = $('preview-svg');
+  let defs = svg.querySelector('defs');
+  defs.innerHTML = `
+    <pattern id="pg" width="48" height="48" patternUnits="userSpaceOnUse">
+      <path d="M 48 0 L 0 0 0 48" fill="none" stroke="#C79A6F" stroke-width="0.3" opacity="0.14"/>
+    </pattern>
+    <pattern id="dots" width="32" height="32" patternUnits="userSpaceOnUse">
+      <circle cx="16" cy="16" r="0.7" fill="#C79A6F" opacity="0.22"/>
+    </pattern>
+    <pattern id="bp-grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#4A7FBF" stroke-width="0.4" opacity="0.2"/>
+    </pattern>
+    ${tpl.extraDefs}`;
+
+  $('svg-root').innerHTML = buildContent(tpl, name, role, 'preview');
+
+  // Filename badge
+  const slug = getSlug();
+  $('fname-badge').innerHTML = `<b style="color:var(--tan)">${slug}</b>.svg &nbsp;·&nbsp; .png`;
+}
+
+function getSlug() {
+  const { name, role } = getInputs();
+  return [
+    name ? name.toLowerCase().replace(/\s+/g,'_') : null,
+    role ? role.toLowerCase().replace(/[\s/]+/g,'_') : null,
+    'alphonso'
+  ].filter(Boolean).join('_');
+}
+
+/* ═══════════════════════════
+   BUILD SVG STRING (for download)
+═══════════════════════════ */
+function buildSVGString(skipIcons = false) {
+  const { name, role } = getInputs();
+  const tpl = TEMPLATES.find(t => t.id === activeTpl);
+  const defs = `
+  <defs>
+    <pattern id="pg" width="48" height="48" patternUnits="userSpaceOnUse">
+      <path d="M 48 0 L 0 0 0 48" fill="none" stroke="#C79A6F" stroke-width="0.3" opacity="0.14"/>
+    </pattern>
+    <pattern id="dots" width="32" height="32" patternUnits="userSpaceOnUse">
+      <circle cx="16" cy="16" r="0.7" fill="#C79A6F" opacity="0.22"/>
+    </pattern>
+    <pattern id="bp-grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#4A7FBF" stroke-width="0.4" opacity="0.2"/>
+    </pattern>
+    ${tpl.extraDefs}
+  </defs>`;
+
+  return `<svg width="1584" height="396" viewBox="0 0 1584 396" xmlns="http://www.w3.org/2000/svg">
+  <!-- Alphonso AI · Banner Studio v3.0 · Template: ${tpl.name} -->
+  ${defs}
+  ${buildContent(tpl, name, role, skipIcons ? 'skip' : 'svg')}</svg>`;
+}
+
+/* ═══════════════════════════
+   PNG EXPORT
+   Strategy: fetch every CDN icon as a blob → data URL → draw on canvas.
+   This bypasses canvas CORS taint entirely — no crossOrigin flag needed.
+═══════════════════════════ */
+
+// Cache of id → dataURL so we don't re-fetch on repeated exports
+const _iconCache = {};
+
+async function fetchIconAsDataURL(skill) {
+  if (_iconCache[skill.id]) return _iconCache[skill.id];
+
+  // Custom inline SVGs → encode directly, no fetch needed
+  if (skill.customSvg) {
+    const inner = skill.customSvg
+      .replace(/<svg[^>]*>/, '')
+      .replace('</svg>', '');
+    const svgStr = `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">${inner}</svg>`;
+    const dataUrl = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgStr)));
+    _iconCache[skill.id] = dataUrl;
+    return dataUrl;
+  }
+
+  // CDN SVGs → fetch as blob → object URL → load into Image → draw to tiny canvas → PNG data URL
+  // (object URLs ARE same-origin so canvas never taints)
+  try {
+    const res = await fetch(skill.src);
+    if (!res.ok) throw new Error('fetch failed');
+    const blob = await res.blob();
+
+    // Convert blob to data URL via FileReader (universally supported)
+    const dataUrl = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload  = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+
+    _iconCache[skill.id] = dataUrl;
+    return dataUrl;
+  } catch (e) {
+    console.warn('Icon fetch failed:', skill.id, e);
+    return null;
+  }
+}
+
+async function loadImageFromDataURL(dataUrl) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload  = () => resolve(img);
+    img.onerror = () => resolve(null); // resolve null so we skip gracefully
+    img.src = dataUrl;
+  });
+}
+
+async function downloadPNG() {
+  showToast('FETCHING ICONS…');
+
+  // 1. Pre-fetch all selected skill icons as data URLs
+  const iconDataURLs = await Promise.all(selectedSkills.map(s => fetchIconAsDataURL(s)));
+
+  showToast('RENDERING PNG…');
+
+  // 2. Build SVG string (WITHOUT embedded image tags — we'll draw icons separately)
+  //    Pass forExport=true but strip <image> tags from SVG to avoid double-render
+  const svgStr = buildSVGString(true /* skipIcons */);
+
+  const scale = 2;
+  const W = 1584 * scale, H = 396 * scale;
+  const canvas = $('export-canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  // 3. Render the base SVG (background + text + shapes, no icons)
+  const svgBlob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
+  const svgUrl  = URL.createObjectURL(svgBlob);
+
+  await new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      ctx.clearRect(0, 0, W, H);
+      ctx.drawImage(img, 0, 0, W, H);
+      URL.revokeObjectURL(svgUrl);
+      resolve();
+    };
+    img.onerror = () => { URL.revokeObjectURL(svgUrl); reject(); };
+    img.src = svgUrl;
+  }).catch(() => { showToast('SVG RENDER ERROR'); return; });
+
+  // 4. Draw skill icons directly onto canvas — fully CORS-safe
+  if (selectedSkills.length) {
+    await drawSkillsOnCanvas(ctx, scale);
+  }
+
+  // 5. Export
+  try {
+    const pngUrl = canvas.toDataURL('image/png');
+    const a = document.createElement('a');
+    a.href = pngUrl;
+    a.download = `${getSlug()}.png`;
+    a.click();
+    showToast('✓ PNG DOWNLOADED · 3168 × 792 RETINA');
+  } catch(e) {
+    // If canvas is still somehow tainted, fallback message
+    showToast('CANVAS TAINTED — USE SVG EXPORT');
+    console.error(e);
+  }
+}
+
+function downloadSVG() {
+  const blob = new Blob([buildSVGString()], { type:'image/svg+xml' });
+  const url  = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `${getSlug()}.svg`; a.click();
+  URL.revokeObjectURL(url);
+  showToast('SVG DOWNLOADED');
+}
+function copySVG() {
+  navigator.clipboard.writeText(buildSVGString()).then(() => showToast('SVG CODE COPIED'));
+}
+
+/* ═══════════════════════════
+   SKILLS PICKER UI
+═══════════════════════════ */
+function initSkillUI() {
+  // Categories
+  const catEl = $('skill-cats');
+  catEl.innerHTML = CATS.map(c =>
+    `<button class="cat-btn ${c==='All'?'active':''}" onclick="filterCat('${c}',this)">${c}</button>`
+  ).join('');
+
+  renderSkillGrid();
+  renderShowcase();
+}
+
+function filterCat(cat, btn) {
+  activeCategory = cat;
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderSkillGrid();
+}
+
+$('skill-search') && document.getElementById('skill-search').addEventListener('input', e => {
+  skillSearch = e.target.value.trim().toLowerCase();
+  renderSkillGrid();
+});
+
+function renderSkillGrid() {
+  const grid = $('skills-grid');
+  const filtered = SKILLS.filter(s => {
+    const matchCat = activeCategory === 'All' || s.cat === activeCategory;
+    const matchQ = !skillSearch || s.name.toLowerCase().includes(skillSearch) || s.id.includes(skillSearch);
+    return matchCat && matchQ;
+  });
+
+  grid.innerHTML = filtered.map(s => {
+    const isSel = selectedSkills.some(x => x.id === s.id);
+    const imgEl = s.customSvg
+      ? `<div style="width:22px;height:22px;display:flex;align-items:center;justify-content:center">${s.customSvg.replace('<svg viewBox="0 0 24 24"',`<svg viewBox="0 0 24 24" width="22" height="22"`)}</div>`
+      : `<img src="${s.src}" alt="${s.name}" width="22" height="22" loading="lazy" onerror="this.style.opacity='0.3'"/>`;
+    return `<button class="skill-btn ${isSel?'selected':''}" onclick="toggleSkill('${s.id}')" title="${s.name}">
+      ${imgEl}
+      <span>${s.name}</span>
+    </button>`;
+  }).join('');
+}
+
+function toggleSkill(id) {
+  const s = SKILLS.find(x => x.id === id);
+  const idx = selectedSkills.findIndex(x => x.id === id);
+  if (idx > -1) {
+    selectedSkills.splice(idx, 1);
+  } else {
+    selectedSkills.push(s);
+  }
+  renderSkillGrid();
+  renderSelectedBar();
+  render();
+}
+
+function toggleSkill(id) {
+  const s = SKILLS.find(x => x.id === id);
+  const idx = selectedSkills.findIndex(x => x.id === id);
+  if (idx > -1) {
+    selectedSkills.splice(idx, 1);
+  } else {
+    selectedSkills.push(s);
+  }
+  renderSkillGrid();
+  renderSelectedBar();
+  renderShowcase();
+  render();
+}
+
+function renderSelectedBar() {
+  const bar = $('selected-bar');
+  const count = $('sel-count');
+  if (count) count.textContent = selectedSkills.length || '0';
+  if (!selectedSkills.length) {
+    bar.innerHTML = '<span style="font-size:9px;color:var(--muted)">None selected — pick from the grid above</span>';
+    return;
+  }
+  bar.innerHTML = selectedSkills.map(s => {
+    const imgEl = s.customSvg
+      ? `<span style="width:12px;height:12px;display:inline-flex;align-items:center">${s.customSvg.replace('<svg viewBox="0 0 24 24"',`<svg viewBox="0 0 24 24" width="12" height="12"`)}</span>`
+      : `<img src="${s.src}" width="12" height="12" style="object-fit:contain"/>`;
+    return `<div class="sel-tag">${imgEl}${s.name}<button onclick="toggleSkill('${s.id}')">×</button></div>`;
+  }).join('');
+}
+
+/* ═══════════════════════════
+   ASSET SHOWCASE — fills space below preview
+   Shows all selected skill icons at larger size with names
+═══════════════════════════ */
+function renderShowcase() {
+  const sc = $('showcase');
+  if (!sc) return;
+
+  if (!selectedSkills.length) {
+    sc.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100px;font-size:10px;color:var(--muted);letter-spacing:2px">SELECT SKILLS ABOVE TO SEE ASSET PREVIEW</div>`;
+    return;
+  }
+
+  sc.innerHTML = `
+    <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center">
+      ${selectedSkills.map((s,i) => {
+        const imgEl = s.customSvg
+          ? `<div style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;flex-shrink:0">${s.customSvg.replace('<svg viewBox="0 0 24 24"',`<svg viewBox="0 0 24 24" width="40" height="40"`)}</div>`
+          : `<img src="${s.src}" width="40" height="40" style="object-fit:contain;flex-shrink:0" onerror="this.style.opacity='0.2'"/>`;
+        return `<div style="display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;opacity:.9;transition:opacity .15s" onclick="toggleSkill('${s.id}')" title="Click to remove">
+          <div style="width:56px;height:56px;background:var(--surface2);border:.5px solid var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;position:relative;transition:border-color .15s" onmouseover="this.style.borderColor='rgba(199,154,111,0.5)'" onmouseout="this.style.borderColor='var(--border)'">
+            ${imgEl}
+            <div style="position:absolute;top:3px;right:3px;width:14px;height:14px;background:rgba(199,154,111,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;color:var(--tan);opacity:0;transition:opacity .15s" class="remove-icon">×</div>
+          </div>
+          <span style="font-size:8px;color:var(--muted);letter-spacing:.5px;text-align:center;max-width:56px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.name}</span>
+        </div>`;
+      }).join('')}
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+        <div style="width:56px;height:56px;background:transparent;border:.5px dashed var(--border2);border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--tan);font-size:20px" onclick="document.getElementById('skills-grid').scrollIntoView({behavior:'smooth'})" title="Add more">+</div>
+        <span style="font-size:8px;color:var(--muted);letter-spacing:.5px">Add more</span>
+      </div>
+    </div>
+    <div style="margin-top:10px;font-size:9px;color:var(--muted);letter-spacing:1px">
+      <b style="color:var(--tan)">${selectedSkills.length}</b> skill${selectedSkills.length===1?'':'s'} selected · Icons wrap in rows of 9 from the bottom-right corner · Click any icon to remove
+    </div>`;
+}
+
+/* ═══════════════════════════
+   TEMPLATE CARDS
+═══════════════════════════ */
+function initTemplateCards() {
+  const grid = $('tpl-grid');
+  grid.innerHTML = TEMPLATES.map(t =>
+    `<div class="tpl-card ${t.id===activeTpl?'active':''}" data-tpl="${t.id}" onclick="selectTpl('${t.id}')">
+      ${t.thumb}
+      <div class="tpl-lbl">${t.name}<div class="tpl-dot"></div></div>
+    </div>`
+  ).join('');
+}
+function selectTpl(id) {
+  activeTpl = id;
+  document.querySelectorAll('.tpl-card').forEach(c => c.classList.toggle('active', c.dataset.tpl === id));
+  render();
+}
+
+/* ═══════════════════════════
+   LINKEDIN OVERLAY TOGGLE
+═══════════════════════════ */
+function toggleOverlay() {
+  overlayVisible = !overlayVisible;
+  $('li-overlay').style.opacity = overlayVisible ? '1' : '0';
+  $('overlay-btn').textContent = overlayVisible ? '👁 Hide LinkedIn Zone' : '👁 Show LinkedIn Zone';
+}
+
+/* ═══════════════════════════
+   EVENTS
+═══════════════════════════ */
+$('inp-name').addEventListener('input', render);
+$('inp-role').addEventListener('input', () => {
+  const val = $('inp-role').value.trim();
+  document.querySelectorAll('.chip').forEach(c => c.classList.toggle('active', c.dataset.role === val));
+  render();
+});
+document.querySelectorAll('.chip').forEach(c => c.addEventListener('click', () => {
+  $('inp-role').value = c.dataset.role;
+  document.querySelectorAll('.chip').forEach(x => x.classList.remove('active'));
+  c.classList.add('active');
+  render();
+}));
+
+/* ═══════════════════════════
+   TOAST
+═══════════════════════════ */
+function showToast(msg) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+/* ═══════════════════════════
+   BOOT
+═══════════════════════════ */
+// Pre-select 9 suggested skills as a starting point
+const SUGGESTED = ['python','claude','openai','pytorch','aws','docker','git','react','postgresql'];
+SUGGESTED.forEach(id => {
+  const s = SKILLS.find(x => x.id === id);
+  if (s) selectedSkills.push(s);
+});
+
+initTemplateCards();
+initSkillUI();
+renderSelectedBar();
+renderShowcase();
+render();
+</script>
+</body>
+</html>

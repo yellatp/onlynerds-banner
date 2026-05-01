@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import type { BannerConfig, LogoEntry } from './types'
+import type { BannerConfig, LogoEntry, ElementPosition } from './types'
 import LogoSearchPicker from './LogoSearchPicker'
 import BannerCanvas from './BannerCanvas'
 import SkillPicker from './SkillPicker'
@@ -9,6 +9,7 @@ import { TEMPLATES, FORMATS, FONT_OPTIONS, FONT_WEIGHTS } from '@data/templates'
 import type { BannerTemplate, CanvasFormat, FontOption, PatternId } from '@data/templates'
 // LogoPlacement removed — placement is now semantic: current=top-right, past=bottom-right
 import type { Skill } from '@data/skills'
+import type { ElementType } from './useDragResize'
 
 // ─── Defaults ─────────────────────────────────────────────────────────────────
 
@@ -312,6 +313,50 @@ function gitAvatarUrl(username: string, platform: string): string {
   }
 }
 
+// ─── Position control helpers ─────────────────────────────────────────────────
+
+/** Map ElementType to the BannerConfig key for its position override */
+function positionConfigKey(type: ElementType): keyof BannerConfig | null {
+  switch (type) {
+    case 'name':        return 'namePos'
+    case 'role':        return 'rolePos'
+    case 'team':        return 'teamPos'
+    case 'tagline':     return 'taglinePos'
+    case 'skills':      return 'skillsPos'
+    case 'currentLogo': return 'currentLogoPos'
+    case 'pastLogos':   return 'pastLogosPos'
+    case 'gitBadge':    return 'gitBadgePos'
+  }
+}
+
+/** Small inline input for X/Y position values */
+function PositionInput({ label, value, onChange }: {
+  label: string
+  value: number | undefined
+  onChange: (v: number) => void
+}) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+      <span style={{ fontSize: 9, color: 'var(--muted)', fontFamily: 'var(--mono)', letterSpacing: '0.1em' }}>{label}:</span>
+      <input
+        type="number"
+        value={value ?? ''}
+        onChange={e => {
+          const n = parseInt(e.target.value, 10)
+          if (!isNaN(n)) onChange(n)
+        }}
+        placeholder="auto"
+        style={{
+          width: 60,
+          background: 'var(--surface2)', border: '0.5px solid var(--border)',
+          borderRadius: 4, color: 'var(--text)', fontFamily: 'var(--mono)',
+          fontSize: 11, padding: '3px 6px', outline: 'none',
+        }}
+      />
+    </div>
+  )
+}
+
 // ─── Main Studio ──────────────────────────────────────────────────────────────
 
 type Tab = 'template' | 'identity' | 'skills' | 'logo' | 'github' | 'export'
@@ -319,6 +364,8 @@ type Tab = 'template' | 'identity' | 'skills' | 'logo' | 'github' | 'export'
 export default function Studio() {
   const [cfg, setCfg] = useState<BannerConfig>(DEFAULT)
   const [tab, setTab] = useState<Tab>('template')
+  const [editMode, setEditMode] = useState(false)
+  const [selectedElement, setSelectedElement] = useState<ElementType | null>(null)
   const svgRef = useRef<SVGSVGElement>(null)
 
   const set = <K extends keyof BannerConfig>(key: K, value: BannerConfig[K]) =>
@@ -351,6 +398,42 @@ export default function Studio() {
     { id: 'export',   label: '06 Export'   },
   ]
 
+  // ── Position control helpers ────────────────────────────────────────────
+
+  const ELEMENT_LABELS: Record<ElementType, string> = {
+    name: 'Name',
+    role: 'Role',
+    team: 'Team',
+    tagline: 'Tagline',
+    skills: 'Skills Row',
+    currentLogo: 'Current Logo',
+    pastLogos: 'Past Logos',
+    gitBadge: 'Git Badge',
+  }
+
+  const getElementPos = (type: ElementType): ElementPosition | undefined => {
+    switch (type) {
+      case 'name':        return cfg.namePos
+      case 'role':        return cfg.rolePos
+      case 'team':        return cfg.teamPos
+      case 'tagline':     return cfg.taglinePos
+      case 'skills':      return cfg.skillsPos
+      case 'currentLogo': return cfg.currentLogoPos
+      case 'pastLogos':   return cfg.pastLogosPos
+      case 'gitBadge':    return cfg.gitBadgePos
+    }
+  }
+
+  const setElementPos = (type: ElementType, pos: ElementPosition | undefined) => {
+    const key = positionConfigKey(type)
+    if (key) set(key, pos)
+  }
+
+  const resetElementPos = (type: ElementType) => {
+    setElementPos(type, undefined)
+    setSelectedElement(null)
+  }
+
   return (
     <div style={{ maxWidth: 1280, margin: '0 auto', padding: '32px 40px 80px' }}>
 
@@ -364,22 +447,89 @@ export default function Studio() {
               {cfg.format.width} x {cfg.format.height} — {cfg.format.label}
             </span>
           </div>
-          {cfg.format.id === 'linkedin' && (
-            <button type="button" onClick={() => set('showLinkedInZone', !cfg.showLinkedInZone)} style={{
-              fontSize: 9, color: cfg.showLinkedInZone ? 'var(--tan)' : 'var(--muted)',
-              letterSpacing: '0.1em', cursor: 'pointer',
-              border: `0.5px solid ${cfg.showLinkedInZone ? 'var(--tan-mid)' : 'var(--border)'}`,
-              background: cfg.showLinkedInZone ? 'var(--tan-dim)' : 'transparent',
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            {/* Edit Canvas toggle */}
+            <button type="button" onClick={() => { setEditMode(!editMode); if (editMode) setSelectedElement(null) }} style={{
+              fontSize: 9, letterSpacing: '0.1em', cursor: 'pointer',
+              border: `0.5px solid ${editMode ? 'var(--tan-mid)' : 'var(--border)'}`,
+              background: editMode ? 'var(--tan-dim)' : 'transparent',
+              color: editMode ? 'var(--tan)' : 'var(--muted)',
               borderRadius: 4, padding: '4px 10px', fontFamily: 'var(--mono)',
             }}>
-              {cfg.showLinkedInZone ? 'Hide' : 'Show'} Profile Photo Zone
+              {editMode ? '✕ Exit Edit Canvas' : '✎ Edit Canvas'}
             </button>
-          )}
+            {editMode && (
+              <span style={{
+                fontSize: 8, letterSpacing: '0.15em', fontFamily: 'var(--mono)',
+                color: 'var(--tan)', background: 'var(--tan-dim)',
+                border: '0.5px solid var(--tan-mid)', borderRadius: 4,
+                padding: '4px 10px', whiteSpace: 'nowrap',
+              }}>
+                ● Canvas Edit Mode ON
+              </span>
+            )}
+            {cfg.format.id === 'linkedin' && (
+              <button type="button" onClick={() => set('showLinkedInZone', !cfg.showLinkedInZone)} style={{
+                fontSize: 9, color: cfg.showLinkedInZone ? 'var(--tan)' : 'var(--muted)',
+                letterSpacing: '0.1em', cursor: 'pointer',
+                border: `0.5px solid ${cfg.showLinkedInZone ? 'var(--tan-mid)' : 'var(--border)'}`,
+                background: cfg.showLinkedInZone ? 'var(--tan-dim)' : 'transparent',
+                borderRadius: 4, padding: '4px 10px', fontFamily: 'var(--mono)',
+              }}>
+                {cfg.showLinkedInZone ? 'Hide' : 'Show'} Profile Photo Zone
+              </button>
+            )}
+          </div>
         </div>
 
         <div style={{ background: 'var(--surface)', border: '0.5px solid var(--border)', borderRadius: 12, overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }}>
-          <BannerCanvas config={cfg} svgRef={svgRef} />
+          <BannerCanvas
+            config={cfg}
+            svgRef={svgRef}
+            editMode={editMode}
+            onConfigChange={updater => setCfg(updater)}
+          />
         </div>
+
+        {/* Position controls (visible in edit mode when an element is selected) */}
+        {editMode && selectedElement && (
+          <div style={{
+            marginTop: 12,
+            background: 'var(--surface)', border: '0.5px solid var(--border)',
+            borderRadius: 8, padding: '12px 16px',
+            display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap',
+          }}>
+            <span style={{ fontSize: 9, color: 'var(--tan)', fontFamily: 'var(--mono)', letterSpacing: '0.15em', textTransform: 'uppercase' }}>
+              {ELEMENT_LABELS[selectedElement]}
+            </span>
+
+            <PositionInput
+              label="X"
+              value={getElementPos(selectedElement)?.x}
+              onChange={v => {
+                const current = getElementPos(selectedElement)
+                setElementPos(selectedElement, { x: v, y: current?.y ?? 0 })
+              }}
+            />
+            <PositionInput
+              label="Y"
+              value={getElementPos(selectedElement)?.y}
+              onChange={v => {
+                const current = getElementPos(selectedElement)
+                setElementPos(selectedElement, { x: current?.x ?? 0, y: v })
+              }}
+            />
+
+            <button type="button" onClick={() => resetElementPos(selectedElement)} style={{
+              fontSize: 9, color: 'var(--muted)', cursor: 'pointer',
+              border: '0.5px solid var(--border)', background: 'transparent',
+              borderRadius: 4, padding: '4px 10px', fontFamily: 'var(--mono)',
+              letterSpacing: '0.1em',
+            }}>
+              Reset Position
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Control panel */}

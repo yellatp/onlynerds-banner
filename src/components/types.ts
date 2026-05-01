@@ -10,6 +10,20 @@ export type LogoEntry = {
   showAsText: boolean // skip image, render name as text only
 }
 
+/** ViewBox coordinate override for drag-and-drop */
+export type ElementPosition = {
+  x: number
+  y: number
+  /** Optional size override (used by skills row for icon size, logos for logo size) */
+  size?: number
+}
+
+/** Optional size override for resize */
+export type ElementSize = {
+  width?: number
+  height?: number
+}
+
 export type BannerConfig = {
   // Canvas
   format: CanvasFormat
@@ -49,4 +63,17 @@ export type BannerConfig = {
   // Layout
   showLinkedInZone: boolean
   patternOpacity: number
+  // ─── Drag-and-drop position overrides ───
+  // When set, these override the computed default position/size in the SVG viewBox.
+  // When null/undefined, the element uses its computed default.
+  namePos?:    ElementPosition
+  rolePos?:    ElementPosition
+  teamPos?:    ElementPosition
+  taglinePos?: ElementPosition
+  skillsPos?:  ElementPosition
+  currentLogoPos?: ElementPosition & { size?: number }
+  pastLogosPos?:   ElementPosition & { size?: number }
+  gitBadgePos?: ElementPosition
+  /** Override for git badge icon size (default: 18 * scaleH) */
+  gitBadgeSize?: number
 }

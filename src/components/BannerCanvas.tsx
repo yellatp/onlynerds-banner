@@ -1,6 +1,8 @@
-import { useRef } from 'react'
+import { useRef, useCallback, useMemo } from 'react'
 import type { BannerConfig, LogoEntry } from './types'
 import type { PatternId } from '@data/templates'
+import { useDragResize } from './useDragResize'
+import type { ElementType } from './useDragResize'
 
 // ─── SVG pattern generators ───────────────────────────────────────────────────
 
@@ -215,13 +217,14 @@ type GitBadgeProps = {
   scaleH: number
   scaleW: number
   accent: string
+  /** Optional size override from gitBadgeSize config */
+  sizeOverride?: number
 }
 
-function GitBadge({ username, platform, topY, leftPad, scaleH, scaleW, accent }: GitBadgeProps) {
+function GitBadge({ username, platform, topY, leftPad, scaleH, scaleW, accent, sizeOverride }: GitBadgeProps) {
   const iconUrl = GIT_PLATFORM_ICONS[platform]
-  const profileUrl = GIT_PROFILE_URLS[platform](username)
-  const iconSz = Math.round(18 * scaleH)
-  const fontSize = Math.round(11 * scaleH)
+  const iconSz = sizeOverride ?? Math.round(18 * scaleH)
+  const fontSize = Math.round(iconSz * 0.6)
   const gap = Math.round(6 * scaleW)
   const y = topY
   const textX = leftPad + iconSz + gap
@@ -253,16 +256,121 @@ function GitBadge({ username, platform, topY, leftPad, scaleH, scaleW, accent }:
   )
 }
 
+// ─── Selection overlay helpers ───────────────────────────────────────────────
+
+/** Render a dashed selection outline around a bounding box */
+function SelectionOutline({ box, accent }: { box: { x: number; y: number; width: number; height: number }; accent: string }) {
+  return (
+    <rect
+      x={box.x - 2} y={box.y - 2}
+      width={box.width + 4} height={box.height + 4}
+      fill="none"
+      stroke={accent}
+      strokeWidth={1.2}
+      strokeDasharray="5 3"
+      opacity={0.7}
+      pointerEvents="none"
+    />
+  )
+}
+
+/** Inline resize +/- buttons rendered inside the canvas on the selected element.
+ *  Positioned left (shrink) and right (enlarge) of the element's bounding box.
+ *  Uses onMouseDown with stopPropagation to prevent drag interference. */
+const BTN_SZ = 22
+function ResizeButtons({ box, accent, onResize }: {
+  box: { x: number; y: number; width: number; height: number }
+  accent: string
+  onResize: (delta: number) => void
+}) {
+  const cy = box.y + box.height / 2
+  const leftX = box.x - BTN_SZ - 6
+  const rightX = box.x + box.width + 6
+
+  const handleResize = (delta: number) => (e: React.MouseEvent) => {
+    e.stopPropagation()
+    e.preventDefault()
+    onResize(delta)
+  }
+
+  return (
+    <g>
+      {/* Minus button (left) — SHRINK */}
+      <g onMouseDown={handleResize(-1)} style={{ cursor: 'pointer' }}>
+        <rect
+          x={leftX} y={cy - BTN_SZ / 2}
+          width={BTN_SZ} height={BTN_SZ} rx={4}
+          fill={accent} opacity={0.9}
+        />
+        <text
+          x={leftX + BTN_SZ / 2} y={cy}
+          fontFamily="'IBM Plex Mono', monospace"
+          fontSize={11} fontWeight={700}
+          fill="#1a1a1a" textAnchor="middle"
+          dominantBaseline="central" pointerEvents="none"
+        >−</text>
+        <text
+          x={leftX + BTN_SZ / 2} y={cy - BTN_SZ / 2 - 4}
+          fontFamily="'IBM Plex Mono', monospace"
+          fontSize={7} fill={accent} fillOpacity={0.6}
+          textAnchor="middle" pointerEvents="none"
+        >SHRINK</text>
+      </g>
+      {/* Plus button (right) — ENLARGE */}
+      <g onMouseDown={handleResize(1)} style={{ cursor: 'pointer' }}>
+        <rect
+          x={rightX} y={cy - BTN_SZ / 2}
+          width={BTN_SZ} height={BTN_SZ} rx={4}
+          fill={accent} opacity={0.9}
+        />
+        <text
+          x={rightX + BTN_SZ / 2} y={cy}
+          fontFamily="'IBM Plex Mono', monospace"
+          fontSize={11} fontWeight={700}
+          fill="#1a1a1a" textAnchor="middle"
+          dominantBaseline="central" pointerEvents="none"
+        >+</text>
+        <text
+          x={rightX + BTN_SZ / 2} y={cy + BTN_SZ / 2 + 10}
+          fontFamily="'IBM Plex Mono', monospace"
+          fontSize={7} fill={accent} fillOpacity={0.6}
+          textAnchor="middle" pointerEvents="none"
+        >ENLARGE</text>
+      </g>
+    </g>
+  )
+}
+
+/** Invisible hit-target overlay for drag detection */
+function HitTarget({ box, elementType, onRegister }: {
+  box: { x: number; y: number; width: number; height: number }
+  elementType: ElementType
+  onRegister: (type: ElementType, box: { x: number; y: number; width: number; height: number }) => void
+}) {
+  // Register this element's bounding box for hit-testing
+  onRegister(elementType, box)
+  return (
+    <rect
+      x={box.x} y={box.y}
+      width={box.width} height={box.height}
+      fill="transparent"
+      style={{ cursor: 'move' }}
+    />
+  )
+}
+
 // ─── Main canvas ─────────────────────────────────────────────────────────────
 
 type Props = {
   config: BannerConfig
   svgRef?: React.RefObject<SVGSVGElement | null>
+  editMode?: boolean
+  onConfigChange?: (updater: (prev: BannerConfig) => BannerConfig) => void
 }
 
-export default function BannerCanvas({ config, svgRef }: Props) {
+export default function BannerCanvas({ config, svgRef: externalRef, editMode = false, onConfigChange }: Props) {
   const internalRef = useRef<SVGSVGElement>(null)
-  const ref = svgRef ?? internalRef
+  const svgRef = externalRef ?? internalRef
 
   const {
     format, template, pattern, accentColor, patternOpacity,
@@ -274,6 +382,8 @@ export default function BannerCanvas({ config, svgRef }: Props) {
     logos, logoSize,
     gitUsername, gitPlatform, showGitBadge,
     showLinkedInZone,
+    namePos, rolePos, teamPos, taglinePos,
+    skillsPos, currentLogoPos, pastLogosPos, gitBadgePos,
   } = config
 
   const { width, height } = format
@@ -303,14 +413,16 @@ export default function BannerCanvas({ config, svgRef }: Props) {
   const taglineY = ty
 
   // Skills
-  const skillIconSz = Math.round(36 * scaleH)
+  const skillIconSz = Math.round((skillsPos?.size ?? 36) * scaleH)
   const skillGap    = Math.round(24 * scaleW)
-  const skillRowY   = Math.round(height * 0.82)
+  const skillRowY   = skillsPos?.y ?? Math.round(height * 0.82)
+  const skillRowX   = skillsPos?.x ?? leftPad
   const displayedSkills = skills.slice(0, maxSkills)
 
   // Logo dimensions
-  const logoW  = Math.round(logoSize * scaleW)
-  const logoH  = Math.round(logoSize * 0.42 * scaleH)
+  const effectiveLogoSize = currentLogoPos?.size ?? logoSize
+  const logoW  = Math.round(effectiveLogoSize * scaleW)
+  const logoH  = Math.round(effectiveLogoSize * 0.42 * scaleH)
   const pastW  = Math.round(logoW * 0.72)
   const pastH  = Math.round(logoH * 0.72)
   const logoNamePx = Math.round(8 * scaleH)
@@ -318,22 +430,138 @@ export default function BannerCanvas({ config, svgRef }: Props) {
   const rightEdge = width - rightPad
 
   // Current: top-right anchor
-  const currentTopY = Math.round(20 * scaleH)
+  const currentTopY = currentLogoPos?.y ?? Math.round(20 * scaleH)
+  const currentLeftX = currentLogoPos?.x ?? (rightEdge - logoW)
 
   // Past: bottom-right anchor, sits above skill row (moved up)
-  const pastBottomY = Math.round(height * 0.55) - pastH
+  const pastBottomY = pastLogosPos?.y ?? (Math.round(height * 0.55) - pastH)
+  const pastLeftX = pastLogosPos?.x
 
   const currentLogos = logos.filter(l => !l.isPast)
   const pastLogos    = logos.filter(l =>  l.isPast)
 
   const patternSvg = makePattern(pattern, accent, patternOpacity)
 
+  // ── Drag-resize hook ────────────────────────────────────────────────────
+
+  const effectiveOnChange = onConfigChange ?? (() => {})
+
+  const {
+    selectedElement,
+    registerBox,
+    onMouseDown: dragMouseDown,
+    onMouseMove: dragMouseMove,
+    onMouseUp: dragMouseUp,
+    onTouchStart: dragTouchStart,
+    onTouchMove: dragTouchMove,
+    onTouchEnd: dragTouchEnd,
+  } = useDragResize(config, effectiveOnChange, svgRef, editMode)
+
+  const handleRegister = useCallback((type: ElementType, box: { x: number; y: number; width: number; height: number }) => {
+    registerBox(type, box)
+  }, [registerBox])
+
+  // ── Compute bounding boxes for hit-targets ──────────────────────────────
+
+  const nameBox = useMemo(() => {
+    if (!name) return null
+    const x = namePos?.x ?? leftPad
+    const y = namePos?.y ?? nameY
+    const w = Math.round(name.length * namePx * 0.6)
+    const h = namePx + 4
+    return { x, y: y - namePx, width: w, height: h }
+  }, [name, namePos, leftPad, nameY, namePx])
+
+  const roleBox = useMemo(() => {
+    if (!role) return null
+    const x = rolePos?.x ?? leftPad
+    const y = rolePos?.y ?? roleY
+    const w = Math.round(role.length * rolePx * 0.65)
+    const h = rolePx + 4
+    return { x, y: y - rolePx, width: w, height: h }
+  }, [role, rolePos, leftPad, roleY, rolePx])
+
+  const teamBox = useMemo(() => {
+    if (!team) return null
+    const x = teamPos?.x ?? leftPad
+    const y = teamPos?.y ?? teamY
+    const w = Math.round(team.length * teamPx * 0.6)
+    const h = teamPx + 4
+    return { x, y: y - teamPx, width: w, height: h }
+  }, [team, teamPos, leftPad, teamY, teamPx])
+
+  const taglineBox = useMemo(() => {
+    if (!tagline) return null
+    const x = taglinePos?.x ?? leftPad
+    const y = taglinePos?.y ?? taglineY
+    const w = Math.round(tagline.length * taglinePx * 0.6)
+    const h = taglinePx + 4
+    return { x, y: y - taglinePx, width: w, height: h }
+  }, [tagline, taglinePos, leftPad, taglineY, taglinePx])
+
+  const skillsBox = useMemo(() => {
+    if (displayedSkills.length === 0) return null
+    const count = displayedSkills.length
+    const totalW = count * skillIconSz + (count - 1) * skillGap
+    return { x: skillRowX, y: skillRowY, width: totalW, height: skillIconSz + (showSkillLabels ? 20 : 0) }
+  }, [displayedSkills, skillIconSz, skillGap, skillRowX, skillRowY, showSkillLabels])
+
+  const currentLogoBox = useMemo(() => {
+    if (!currentLogos[0]) return null
+    const x = currentLeftX
+    const y = currentTopY
+    const h = logoH + (currentLogos[0].name && !currentLogos[0].showAsText ? Math.round(12 * scaleH) + logoNamePx : 0)
+    return { x, y, width: logoW, height: h }
+  }, [currentLogos, currentLeftX, currentTopY, logoW, logoH, logoNamePx, scaleH])
+
+  const pastLogosBox = useMemo(() => {
+    if (pastLogos.length === 0) return null
+    const gap = Math.round(20 * scaleW)
+    const totalW = pastLogos.length * pastW + (pastLogos.length - 1) * gap
+    const startX = pastLeftX ?? (rightEdge - totalW)
+    const h = pastH + (pastLogos.some(l => l.name && !l.showAsText) ? Math.round(11 * scaleH) + logoNamePx : 0)
+    return { x: startX, y: pastBottomY, width: totalW, height: h }
+  }, [pastLogos, pastW, pastH, pastLeftX, rightEdge, pastBottomY, logoNamePx, scaleH])
+
+  const gitBadgeBox = useMemo(() => {
+    if (!showGitBadge || !gitUsername) return null
+    const iconSz = Math.round(18 * scaleH)
+    const gap = Math.round(6 * scaleW)
+    const fontSize = Math.round(11 * scaleH)
+    const textW = Math.round(gitUsername.length * fontSize * 0.6)
+    const x = gitBadgePos?.x ?? leftPad
+    const y = gitBadgePos?.y ?? currentTopY
+    return { x, y, width: iconSz + gap + textW, height: iconSz }
+  }, [showGitBadge, gitUsername, gitBadgePos, leftPad, currentTopY, scaleH, scaleW])
+
+  // ── Selection box for the currently selected element ────────────────────
+
+  const selectedBox = useMemo(() => {
+    if (!selectedElement) return null
+    switch (selectedElement) {
+      case 'name':        return nameBox
+      case 'role':        return roleBox
+      case 'team':        return teamBox
+      case 'tagline':     return taglineBox
+      case 'skills':      return skillsBox
+      case 'currentLogo': return currentLogoBox
+      case 'pastLogos':   return pastLogosBox
+      case 'gitBadge':    return gitBadgeBox
+    }
+  }, [selectedElement, nameBox, roleBox, teamBox, taglineBox, skillsBox, currentLogoBox, pastLogosBox, gitBadgeBox])
+
   return (
     <svg
-      ref={ref}
+      ref={svgRef as React.Ref<SVGSVGElement>}
       viewBox={`0 0 ${width} ${height}`}
       xmlns="http://www.w3.org/2000/svg"
       style={{ width: '100%', display: 'block' }}
+      onMouseDown={editMode ? dragMouseDown : undefined}
+      onMouseMove={editMode ? dragMouseMove : undefined}
+      onMouseUp={editMode ? dragMouseUp : undefined}
+      onTouchStart={editMode ? dragTouchStart : undefined}
+      onTouchMove={editMode ? dragTouchMove : undefined}
+      onTouchEnd={editMode ? dragTouchEnd : undefined}
     >
       <defs>
         <clipPath id="canvas-clip">
@@ -382,7 +610,7 @@ export default function BannerCanvas({ config, svgRef }: Props) {
 
       {/* Name */}
       {name && (
-        <text x={leftPad} y={nameY}
+        <text x={namePos?.x ?? leftPad} y={namePos?.y ?? nameY}
           fontFamily={nameFont.family} fontSize={namePx} fontWeight={nameWeight}
           fill="#E8E4DE" letterSpacing={Math.round(0.5 * scaleW)}
         >{name}</text>
@@ -390,7 +618,7 @@ export default function BannerCanvas({ config, svgRef }: Props) {
 
       {/* Role */}
       {role && (
-        <text x={leftPad} y={roleY}
+        <text x={rolePos?.x ?? leftPad} y={rolePos?.y ?? roleY}
           fontFamily={roleFont.family} fontSize={rolePx} fontWeight={roleWeight}
           fill={accent} letterSpacing={Math.round(2 * scaleW)}
         >{role.toUpperCase()}</text>
@@ -398,7 +626,7 @@ export default function BannerCanvas({ config, svgRef }: Props) {
 
       {/* Team */}
       {team && (
-        <text x={leftPad} y={teamY}
+        <text x={teamPos?.x ?? leftPad} y={teamPos?.y ?? teamY}
           fontFamily={teamFont.family} fontSize={teamPx} fontWeight={teamWeight}
           fill="#E8E4DE" fillOpacity={0.55} letterSpacing={Math.round(1.5 * scaleW)}
         >{team}</text>
@@ -406,7 +634,7 @@ export default function BannerCanvas({ config, svgRef }: Props) {
 
       {/* Tagline */}
       {tagline && (
-        <text x={leftPad} y={taglineY}
+        <text x={taglinePos?.x ?? leftPad} y={taglinePos?.y ?? taglineY}
           fontFamily={taglineFont.family} fontSize={taglinePx} fontWeight={taglineWeight}
           fill="#E8E4DE" fillOpacity={0.35} letterSpacing={Math.round(scaleW)}
         >{tagline}</text>
@@ -416,14 +644,14 @@ export default function BannerCanvas({ config, svgRef }: Props) {
       {displayedSkills.length > 0 && (
         <g>
           <text
-            x={leftPad} y={skillRowY - Math.round(16 * scaleH)}
+            x={skillRowX} y={skillRowY - Math.round(16 * scaleH)}
             fontFamily="'IBM Plex Mono', monospace"
             fontSize={Math.round(7 * scaleH)}
             fill={accent} letterSpacing={3} opacity={0.55}
           >SKILLS</text>
 
           {displayedSkills.map((skill, i) => {
-            const sx = leftPad + i * (skillIconSz + skillGap)
+            const sx = skillRowX + i * (skillIconSz + skillGap)
             return (
               <g key={skill.id}>
                 <image
@@ -452,7 +680,7 @@ export default function BannerCanvas({ config, svgRef }: Props) {
           logo={currentLogos[0]}
           logoW={logoW} logoH={logoH}
           namePx={logoNamePx}
-          rightEdge={rightEdge}
+          rightEdge={currentLogoPos ? currentLeftX + logoW : rightEdge}
           topY={currentTopY}
           accent={accent}
           scaleH={scaleH} scaleW={scaleW}
@@ -464,7 +692,7 @@ export default function BannerCanvas({ config, svgRef }: Props) {
         logos={pastLogos}
         pastW={pastW} pastH={pastH}
         namePx={logoNamePx}
-        rightEdge={rightEdge}
+        rightEdge={pastLogosPos ? (pastLeftX ?? rightEdge) + (pastLogos.length * pastW + (pastLogos.length - 1) * Math.round(20 * scaleW)) : rightEdge}
         bottomY={pastBottomY}
         accent={accent}
         scaleH={scaleH} scaleW={scaleW}
@@ -475,11 +703,12 @@ export default function BannerCanvas({ config, svgRef }: Props) {
         <GitBadge
           username={gitUsername}
           platform={gitPlatform}
-          topY={currentTopY}
-          leftPad={leftPad}
+          topY={gitBadgePos?.y ?? currentTopY}
+          leftPad={gitBadgePos?.x ?? leftPad}
           scaleH={scaleH}
           scaleW={scaleW}
           accent={accent}
+          sizeOverride={config.gitBadgeSize}
         />
       )}
 
@@ -494,6 +723,50 @@ export default function BannerCanvas({ config, svgRef }: Props) {
           fill="none" stroke={accent} strokeWidth={0.8} opacity={0.5}
         />
       </g>
+
+      {/* ── Edit mode overlays ────────────────────────────────────────────── */}
+      {editMode && (
+        <g>
+          {/* Hit-target overlays (invisible, for drag detection) */}
+          {nameBox && <HitTarget box={nameBox} elementType="name" onRegister={handleRegister} />}
+          {roleBox && <HitTarget box={roleBox} elementType="role" onRegister={handleRegister} />}
+          {teamBox && <HitTarget box={teamBox} elementType="team" onRegister={handleRegister} />}
+          {taglineBox && <HitTarget box={taglineBox} elementType="tagline" onRegister={handleRegister} />}
+          {skillsBox && <HitTarget box={skillsBox} elementType="skills" onRegister={handleRegister} />}
+          {currentLogoBox && <HitTarget box={currentLogoBox} elementType="currentLogo" onRegister={handleRegister} />}
+          {pastLogosBox && <HitTarget box={pastLogosBox} elementType="pastLogos" onRegister={handleRegister} />}
+          {gitBadgeBox && <HitTarget box={gitBadgeBox} elementType="gitBadge" onRegister={handleRegister} />}
+
+          {/* Selection outline */}
+          {selectedBox && (
+            <SelectionOutline box={selectedBox} accent={accent} />
+          )}
+
+          {/* Inline resize +/- buttons */}
+          {selectedBox && selectedElement && (
+            <ResizeButtons
+              box={selectedBox}
+              accent={accent}
+              onResize={(delta) => {
+                const el = selectedElement
+                if (el === 'currentLogo' || el === 'pastLogos') {
+                  effectiveOnChange(prev => ({ ...prev, logoSize: Math.max(20, Math.min(320, (prev.logoSize ?? 130) + delta * 5)) }))
+                } else if (el === 'skills') {
+                  effectiveOnChange(prev => ({
+                    ...prev,
+                    skillsPos: { ...(prev.skillsPos ?? { x: 0, y: 0 }), size: Math.max(12, Math.min(80, (prev.skillsPos?.size ?? 36) + delta * 4)) },
+                  }))
+                } else if (el === 'gitBadge') {
+                  effectiveOnChange(prev => ({ ...prev, gitBadgeSize: Math.max(8, Math.min(80, (prev.gitBadgeSize ?? 18) + delta * 2)) }))
+                } else {
+                  const sizeKey = el === 'name' ? 'nameSize' : el === 'role' ? 'roleSize' : el === 'team' ? 'teamSize' : 'taglineSize'
+                  effectiveOnChange(prev => ({ ...prev, [sizeKey]: Math.max(5, Math.min(60, ((prev as any)[sizeKey] ?? 20) + delta * 2)) }))
+                }
+              }}
+            />
+          )}
+        </g>
+      )}
     </svg>
   )
 }
